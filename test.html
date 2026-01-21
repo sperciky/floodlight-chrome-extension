@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Floodlight Debugger Test Page</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 1200px;
+      margin: 40px auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    h1 {
+      color: #333;
+      border-bottom: 3px solid #667eea;
+      padding-bottom: 10px;
+    }
+    h2 {
+      color: #555;
+      margin-top: 30px;
+    }
+    .test-section {
+      background: white;
+      padding: 20px;
+      margin: 20px 0;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .test-section h3 {
+      color: #667eea;
+      margin-top: 0;
+    }
+    button {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      margin: 10px 10px 10px 0;
+      transition: all 0.2s ease;
+    }
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+    button:active {
+      transform: translateY(0);
+    }
+    .code-block {
+      background: #f8f9fa;
+      border: 1px solid #e0e0e0;
+      border-radius: 4px;
+      padding: 12px;
+      margin: 10px 0;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      overflow-x: auto;
+      word-wrap: break-word;
+    }
+    .info {
+      background: #e3f2fd;
+      border-left: 4px solid #2196f3;
+      padding: 12px;
+      margin: 10px 0;
+      border-radius: 4px;
+    }
+    .warning {
+      background: #fff3e0;
+      border-left: 4px solid #ff9800;
+      padding: 12px;
+      margin: 10px 0;
+      border-radius: 4px;
+    }
+    .success {
+      background: #e8f5e9;
+      border-left: 4px solid #4caf50;
+      padding: 12px;
+      margin: 10px 0;
+      border-radius: 4px;
+    }
+    #console {
+      background: #263238;
+      color: #aed581;
+      padding: 15px;
+      border-radius: 4px;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      max-height: 300px;
+      overflow-y: auto;
+      margin-top: 20px;
+    }
+    .console-entry {
+      margin: 5px 0;
+      padding: 5px;
+      border-bottom: 1px solid #37474f;
+    }
+    .console-time {
+      color: #80cbc4;
+    }
+  </style>
+</head>
+<body>
+  <h1>🔍 Floodlight DV360 Debugger - Test Page</h1>
+
+  <div class="info">
+    <strong>Instructions:</strong>
+    <ol style="margin: 10px 0 0 20px;">
+      <li>Open the Floodlight Debugger extension popup (click the extension icon)</li>
+      <li>Ensure tracking is enabled (toggle should be ON/green)</li>
+      <li>Click the buttons below to fire different types of Floodlight tags</li>
+      <li>Watch the extension popup update with captured data</li>
+    </ol>
+  </div>
+
+  <!-- Test Section 1: Valid Counter Tag -->
+  <div class="test-section">
+    <h3>1. Valid Counter Activity</h3>
+    <p>This fires a complete Counter Floodlight with all required parameters.</p>
+    <div class="code-block">
+      src=12345; type=counter; cat=pageview; ord=[random]
+    </div>
+    <button onclick="fireCounterTag()">Fire Counter Tag</button>
+    <div class="success" id="counter-result" style="display:none;">
+      ✓ Counter tag fired! Check the extension popup.
+    </div>
+  </div>
+
+  <!-- Test Section 2: Valid Sales Tag -->
+  <div class="test-section">
+    <h3>2. Valid Sales Activity</h3>
+    <p>This fires a complete Sales Floodlight with revenue and quantity.</p>
+    <div class="code-block">
+      src=12345; type=sales; cat=purchase; qty=1; cost=99.99; ord=[random]
+    </div>
+    <button onclick="fireSalesTag()">Fire Sales Tag</button>
+    <div class="success" id="sales-result" style="display:none;">
+      ✓ Sales tag fired! Check the extension popup.
+    </div>
+  </div>
+
+  <!-- Test Section 3: Tag with Custom Variables -->
+  <div class="test-section">
+    <h3>3. Counter with Custom Variables</h3>
+    <p>This fires a Counter tag with custom u1-u5 variables.</p>
+    <div class="code-block">
+      src=12345; type=counter; cat=custom; u1=value1; u2=value2; u3=value3; u4=value4; u5=value5; ord=[random]
+    </div>
+    <button onclick="fireCustomVarsTag()">Fire Tag with Custom Vars</button>
+    <div class="success" id="custom-result" style="display:none;">
+      ✓ Tag with custom variables fired! Check the extension popup.
+    </div>
+  </div>
+
+  <!-- Test Section 4: Missing Required Parameters -->
+  <div class="test-section">
+    <h3>4. Invalid Tag - Missing Required Parameters</h3>
+    <p><strong>⚠️ This tag is missing 'type' and 'cat' parameters!</strong></p>
+    <div class="code-block" style="color: #f44336;">
+      src=12345; ord=[random] <span style="background: #ffcdd2; padding: 2px 4px;">(missing: type, cat)</span>
+    </div>
+    <button onclick="fireInvalidTag()">Fire Invalid Tag</button>
+    <div class="warning" id="invalid-result" style="display:none;">
+      ⚠️ Invalid tag fired! The extension should highlight missing parameters in RED.
+    </div>
+  </div>
+
+  <!-- Test Section 5: Sales with High Value -->
+  <div class="test-section">
+    <h3>5. High-Value Sales Transaction</h3>
+    <p>This fires a Sales tag with multiple items and high revenue.</p>
+    <div class="code-block">
+      src=12345; type=sales; cat=purchase; qty=10; cost=1499.99; u1=ProductID123; u2=CategoryElectronics; ord=[random]
+    </div>
+    <button onclick="fireHighValueSales()">Fire High-Value Sales</button>
+    <div class="success" id="highvalue-result" style="display:none;">
+      ✓ High-value sales tag fired! Check the extension popup.
+    </div>
+  </div>
+
+  <!-- Test Section 6: Multiple Tags -->
+  <div class="test-section">
+    <h3>6. Fire Multiple Tags Sequentially</h3>
+    <p>This fires 3 different tags in sequence (1 second apart).</p>
+    <button onclick="fireMultipleTags()">Fire 3 Tags in Sequence</button>
+    <div class="info" id="multiple-result" style="display:none;">
+      📊 Firing tags... Watch the extension popup update!
+    </div>
+  </div>
+
+  <!-- Console Log -->
+  <h2>Console Log</h2>
+  <div id="console">
+    <div class="console-entry">
+      <span class="console-time">[Ready]</span> Test page loaded. Click buttons above to fire Floodlight tags.
+    </div>
+  </div>
+
+  <script>
+    // Random number generator for ord parameter
+    function getRandomOrd() {
+      return Math.floor(Math.random() * 10000000000);
+    }
+
+    // Log to console
+    function log(message, type = 'info') {
+      const consoleDiv = document.getElementById('console');
+      const entry = document.createElement('div');
+      entry.className = 'console-entry';
+
+      const time = new Date().toLocaleTimeString('en-US', {
+        hour12: false,
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+      });
+
+      entry.innerHTML = `<span class="console-time">[${time}]</span> ${message}`;
+      consoleDiv.appendChild(entry);
+      consoleDiv.scrollTop = consoleDiv.scrollHeight;
+    }
+
+    // Fire a Floodlight tag
+    function fireFloodlight(params) {
+      const baseUrl = 'https://fls.doubleclick.net/activityi';
+      const url = `${baseUrl};${params}?`;
+
+      const img = new Image(1, 1);
+      img.src = url;
+
+      log(`Firing Floodlight: ${params}`);
+      return url;
+    }
+
+    // Test 1: Counter Tag
+    function fireCounterTag() {
+      const params = `src=12345;type=counter;cat=pageview;ord=${getRandomOrd()}`;
+      fireFloodlight(params);
+      document.getElementById('counter-result').style.display = 'block';
+      setTimeout(() => {
+        document.getElementById('counter-result').style.display = 'none';
+      }, 3000);
+    }
+
+    // Test 2: Sales Tag
+    function fireSalesTag() {
+      const params = `src=12345;type=sales;cat=purchase;qty=1;cost=99.99;ord=${getRandomOrd()}`;
+      fireFloodlight(params);
+      document.getElementById('sales-result').style.display = 'block';
+      setTimeout(() => {
+        document.getElementById('sales-result').style.display = 'none';
+      }, 3000);
+    }
+
+    // Test 3: Custom Variables
+    function fireCustomVarsTag() {
+      const params = `src=12345;type=counter;cat=custom;u1=value1;u2=value2;u3=value3;u4=value4;u5=value5;ord=${getRandomOrd()}`;
+      fireFloodlight(params);
+      document.getElementById('custom-result').style.display = 'block';
+      setTimeout(() => {
+        document.getElementById('custom-result').style.display = 'none';
+      }, 3000);
+    }
+
+    // Test 4: Invalid Tag (Missing Parameters)
+    function fireInvalidTag() {
+      const params = `src=12345;ord=${getRandomOrd()}`;
+      fireFloodlight(params);
+      document.getElementById('invalid-result').style.display = 'block';
+      setTimeout(() => {
+        document.getElementById('invalid-result').style.display = 'none';
+      }, 5000);
+    }
+
+    // Test 5: High-Value Sales
+    function fireHighValueSales() {
+      const params = `src=12345;type=sales;cat=purchase;qty=10;cost=1499.99;u1=ProductID123;u2=CategoryElectronics;ord=${getRandomOrd()}`;
+      fireFloodlight(params);
+      document.getElementById('highvalue-result').style.display = 'block';
+      setTimeout(() => {
+        document.getElementById('highvalue-result').style.display = 'none';
+      }, 3000);
+    }
+
+    // Test 6: Multiple Tags
+    function fireMultipleTags() {
+      const resultDiv = document.getElementById('multiple-result');
+      resultDiv.style.display = 'block';
+
+      log('Starting sequence of 3 tags...');
+
+      // Tag 1
+      setTimeout(() => {
+        fireFloodlight(`src=11111;type=counter;cat=sequence1;ord=${getRandomOrd()}`);
+        log('Tag 1 of 3 fired');
+      }, 0);
+
+      // Tag 2
+      setTimeout(() => {
+        fireFloodlight(`src=22222;type=sales;cat=sequence2;qty=5;cost=250.00;ord=${getRandomOrd()}`);
+        log('Tag 2 of 3 fired');
+      }, 1000);
+
+      // Tag 3
+      setTimeout(() => {
+        fireFloodlight(`src=33333;type=counter;cat=sequence3;u1=final;ord=${getRandomOrd()}`);
+        log('Tag 3 of 3 fired - sequence complete!');
+        setTimeout(() => {
+          resultDiv.style.display = 'none';
+        }, 2000);
+      }, 2000);
+    }
+
+    // Auto-fire a welcome tag on page load
+    window.addEventListener('load', () => {
+      setTimeout(() => {
+        log('Page loaded successfully');
+        log('Extension should be capturing Floodlight requests');
+      }, 500);
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,20 @@
+{
+  "manifest_version": 3,
+  "name": "Floodlight DV360 Debugger",
+  "version": "1.0.0",
+  "description": "Debug and monitor Floodlight DV360 measurement requests in real-time",
+  "permissions": [
+    "webRequest",
+    "storage",
+    "tabs"
+  ],
+  "host_permissions": [
+    "https://fls.doubleclick.net/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html"
+  }
+}
