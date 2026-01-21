@@ -102,14 +102,18 @@ chrome.webRequest.onBeforeRequest.addListener(
 // Main listener for completed Floodlight requests
 chrome.webRequest.onCompleted.addListener(
   (details) => {
+    console.log('[Floodlight Debugger] onCompleted FIRED for:', details.url.substring(0, 100));
+
     // Filter for Floodlight/doubleclick URLs only
     if (!details.url.includes('doubleclick.net')) {
+      console.log('[Floodlight Debugger] onCompleted - Not a doubleclick URL, skipping');
       return;
     }
 
     // Filter for activity endpoints only (not favicon, etc)
     // Note: Floodlight uses both /activity and /activityi
     if (!details.url.includes('/activity') && !details.url.includes('/activityi')) {
+      console.log('[Floodlight Debugger] onCompleted - Not an activity URL, skipping');
       return;
     }
 
@@ -140,6 +144,17 @@ chrome.webRequest.onCompleted.addListener(
     }
 
     console.log('[Floodlight Debugger] Request captured successfully');
+  },
+  { urls: ["<all_urls>"] }
+);
+
+// Error listener to catch failed/cancelled requests
+chrome.webRequest.onErrorOccurred.addListener(
+  (details) => {
+    if (details.url.includes('doubleclick')) {
+      console.log('[Floodlight Debugger] onErrorOccurred - Request failed/cancelled!', details.url);
+      console.log('[Floodlight Debugger] Error details:', details.error);
+    }
   },
   { urls: ["<all_urls>"] }
 );
