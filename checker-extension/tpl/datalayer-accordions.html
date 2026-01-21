@@ -1,0 +1,16 @@
+<div class="field">
+    <div class="control accordions-events-search has-icons-left has-icons-right">
+        <input class="input js-event-search" type="text" placeholder="Find an event...">
+        <span class="icon is-left">
+            <i class="fas fa-search"></i>
+        </span>
+        <span class="icon is-right js-clear-search clear" style="pointer-events: all; cursor: pointer;">
+            <i class="fas fa-times"></i>
+        </span>
+    </div>
+</div>
+<div class="accordions datalayer">
+    {{#objects}}
+        {{{pushObject}}}
+    {{/objects}}
+</div>

@@ -1,0 +1,21 @@
+<div class="panel">
+    <div class="panel-header">
+        <button class="panel-close js-close-panel">
+            <span class="icon">
+                <i class="fas fa-times"></i>
+            </span>
+        </button>
+        <h2 class="panel-title">{{title}}</h2>
+        {{#mainbutton}}
+        <button class="button {{style}}" data-action="{{action}}">
+            <span class="icon">
+                <i class="fas fa-{{icon}}"></i>
+            </span>
+            <span>{{name}}</span>
+        </button>
+        {{/mainbutton}}
+    </div>
+    <div class="panel-content">
+        {{{content}}}
+    </div>
+</div> 

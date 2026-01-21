@@ -1,0 +1,56 @@
+<div class="accordion box" data-id="{{event_index}}" data-event-name="{{name}}">
+    <div class="accordion-header accordion-toggle">
+        <div class="content">
+            <div class="dl-object-header">
+                <div class="dl-object-title">
+                    <span class="dl-object-position tag event-type-{{type}}">{{position}}</span>
+                    <span class="dl-object-name {{type}} toggle">{{name}}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="accordion-body">
+        <div class="tabs">
+            <ul>
+                <li class="{{^jsonDefaultViewMode}}{{/jsonDefaultViewMode}}">
+                    <a class="dl-object-toggle js-toggle-flat {{^jsonDefaultViewMode}}active{{/jsonDefaultViewMode}}">
+                        flat
+                    </a>
+                </li>
+                <li class="{{#jsonDefaultViewMode}}{{/jsonDefaultViewMode}}">
+                    <a class="dl-object-toggle js-toggle-json {{#jsonDefaultViewMode}}active{{/jsonDefaultViewMode}}">
+                        json
+                    </a>
+                </li>
+            </ul>
+        </div>
+        <div class="dl-object-content">
+            <div class="dl-object-json {{#jsonDefaultViewMode}}active{{/jsonDefaultViewMode}}">
+                <button class="button is-primary is-rounded is-small button-copy-json js-copy-push-datalayer">
+                    <span class="icon is-right">
+                        <i class="far fa-copy"></i>
+                    </span>
+                    <span>copy</span>
+                </button>
+                
+                <pre><code class="language-json">{{{object_data}}}</code></pre>
+            </div>
+            <div class="dl-object-flat {{^jsonDefaultViewMode}}active{{/jsonDefaultViewMode}}">
+                <table class="table is-fullwidth">
+                    <tbody>
+                        {{#object_flat}}
+                        <tr>
+                            <td class="flat-key {{special}}">
+                                <span>{{key}}</span>
+                            </td>
+                            <td class="flat-value hljs-{{typeColor}} {{special}}">
+                                <span>{{value}}</span>
+                            </td>
+                        </tr>
+                        {{/object_flat}}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

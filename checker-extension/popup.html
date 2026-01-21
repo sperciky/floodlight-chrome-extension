@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>DataLayer Checker</title>
+    <link rel="stylesheet" href="lib/bulma/bulma.min.css">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css" integrity="sha384-DyZ88mC6Up2uqS4h/KRgHuoeGwBcD4Ng9SiP4dIRy0EXTlnuz47vAwmeGwVChigm" crossorigin="anonymous"/>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="css/custom.css">
+    <link rel="stylesheet" href="css/bulma.reset.css">
+</head>
+<body class="popup">
+    <div class="wrapper">
+        <div class="topbar">
+            <div class="level">
+                <div class="level-left">
+                    <div class="app-title">
+                        <span class="section-1">datalayer</span>
+                        <span class="separator">|</span>
+                        <span class="section-2">checker</span>
+                    </div>
+                </div>
+                <div class="level-right">
+                    <div id="datalayer-select" class="dropdown">
+                        <div class="dropdown-trigger">
+                          <button class="button" aria-haspopup="true" aria-controls="dropdown-menu">
+                            <span class="selected-value">Loading...</span>
+                            <span class="icon is-small">
+                              <i class="fas fa-angle-down" aria-hidden="true"></i>
+                            </span>
+                          </button>
+                        </div>
+                        <div class="dropdown-menu" id="dropdown-menu" role="menu">
+                          <div class="dropdown-content">
+                            <a class="dropdown-item is-loading">Loading...</a>
+                          </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="container">
+            <div id="view-main" class="view active">
+                <div class="dlmessage-block"></div>
+                <div id="dl-objects" class=""></div>
+            </div>
+        </div>
+
+        <div class="snapshot-button-container"></div>
+
+
+        <div class="burger-menu-container">
+            <div class="burger-menu">
+                <div class="burger-menu-button-bars-container">
+                    <button class="burger-menu-button-bars button is-rounded is-link">
+                        <span class="icon">
+                            <i class="fas fa-bars"></i>
+                        </span>
+                        <span>Options</span>
+                    </button>
+                </div>
+                <div class="burger-menu-list box">
+                    <div class="burger-menu-item">
+                        <span>
+                            <span class="icon">
+                                <i class="fas fa-laptop-code is-primary"></i>
+                            </span>
+                            <span>Log push to browser console</span>
+                        </span>
+                        <label class="switch toggle-log">
+                            <input type="checkbox">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="burger-menu-item">
+                        <a href="/workspace.html" target="_blank" class="button is-small is-rounded is-light">
+                            <span class="icon">
+                                <i class="fas fa-arrow-right is-primary"></i>
+                            </span>
+                            <span>My workspace</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="app-footer">
+            <span class="version"></span>
+        </div>
+    </div>
+    
+    
+    <script defer src="lib/umami/script.self.js" data-host-url="https://umami.datalayerchecker.com" data-website-id="c0e31e37-934f-47c9-a00e-b59b2ffb7713" data-auto-track="false"></script>
+    <script src="js/measure.js"></script>
+    <script src="lib/highlight/highlight.min.js"></script>
+    <script src="lib/jquery/jquery-2.1.1.min.js"></script>
+    <script src="lib/mustache/mustache.min.js"></script>
+    <!--<script src="lib/bulma/bulma-accordion.min.js"></script>-->
+    <script src="js/helpers.js"></script>
+    <script src="js/common.js"></script>
+    <script src="js/popup.js"></script>
+
+    <template id="datalayer-select-template">
+        {{^datalayers}}
+        <a class="dropdown-item" data-value="-">-</a>
+        {{/datalayers}}
+        {{#datalayers}}
+        <a class="dropdown-item{{#isFirst}} is-active{{/isFirst}}" data-value="{{name}}">{{name}}</a>
+        {{/datalayers}}
+    </template>
+</body>
+</html>

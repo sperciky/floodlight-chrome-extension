@@ -1,0 +1,18 @@
+{{#isMessage}}
+<div class="dlmessage-msg mb-4">
+    {{#isLoading}}
+    <div class="box">
+        <div>LOADING...</div>
+        <br>
+        <progress class="progress is-primary" max="100">30%</progress>
+    </div>
+    {{/isLoading}}
+    {{#isError}}
+    <div class="message is-danger">
+        <div class="message-body">
+            {{errorMessage}}
+        </div>
+    </div>
+    {{/isError}}
+</div>
+{{/isMessage}}

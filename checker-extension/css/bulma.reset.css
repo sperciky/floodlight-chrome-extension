@@ -1,0 +1,67 @@
+/* Suppression des scrollbars */
+* {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+/* Webkit (Chrome, Safari, etc) */
+*::-webkit-scrollbar {
+  display: none;
+}
+
+/* Reset des outlines et shadows d'accessibilité */
+button:focus,
+input:focus,
+select:focus,
+textarea:focus,
+.button:focus,
+.input:focus,
+.select:focus,
+.textarea:focus,
+.file-cta:focus,
+.file-name:focus,
+.pagination-previous:focus,
+.pagination-next:focus,
+.pagination-link:focus,
+.pagination-ellipsis:focus,
+.tabs a:focus,
+.navbar-item:focus,
+.navbar-link:focus,
+.dropdown-item:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Suppression du outline natif des navigateurs */
+*:focus {
+  outline: none !important;
+}
+
+/* Suppression des styles de focus sur les liens */
+a:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Suppression des borders sur les éléments actifs */
+button:active,
+input:active,
+select:active,
+textarea:active,
+.button:active,
+.input:active,
+.select:active,
+.textarea:active,
+.file-cta:active,
+.file-name:active,
+.pagination-previous:active,
+.pagination-next:active,
+.pagination-link:active,
+.pagination-ellipsis:active,
+.tabs a:active,
+.navbar-item:active,
+.navbar-link:active,
+.dropdown-item:active {
+  outline: none !important;
+  box-shadow: none !important;
+}

@@ -1,0 +1,38 @@
+{{#isQuotaLimit}}
+<a href="/workspace.html" target="_blank" class="button {{buttonClass}} is-rounded snapshot-button">
+    <span class="icon">
+        <i class="{{icon}}"></i>
+    </span>
+    <span>{{text}}</span>
+    <span class="snapshot-counter-indicator tag is-light is-rounded is-small">
+        <span class="count">{{snapshotCount}} /</span>
+        <span class="limit">{{snapshotLimit}}</span>
+    </span>
+</a>
+{{/isQuotaLimit}}
+{{^isQuotaLimit}}
+{{#isStorageCritical}}
+<a href="/workspace.html" target="_blank" class="button {{buttonClass}} is-rounded snapshot-button">
+    <span class="icon">
+        <i class="{{icon}}"></i>
+    </span>
+    <span>{{text}}</span>
+    <span class="snapshot-counter-indicator tag is-light is-rounded is-small">
+        <span class="count">{{snapshotCount}} /</span>
+        <span class="limit">{{snapshotLimit}}</span>
+    </span>
+</a>
+{{/isStorageCritical}}
+{{^isStorageCritical}}
+<button class="button {{buttonClass}} is-rounded snapshot-button">
+    <span class="icon">
+        <i class="{{icon}}"></i>
+    </span>
+    <span>{{text}}</span>
+    <span class="snapshot-counter-indicator tag is-light is-rounded is-small">
+        <span class="count">{{snapshotCount}} /</span>
+        <span class="limit">{{snapshotLimit}}</span>
+    </span>
+</button>
+{{/isStorageCritical}}
+{{/isQuotaLimit}}

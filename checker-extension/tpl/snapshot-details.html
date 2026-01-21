@@ -1,0 +1,34 @@
+<div class="snapshot-details box" data-snapshot-id="{{snapshot.id}}">
+    <div class="snapshot-info">
+        <div class="mb-2 snapshot-info-host">
+            <span class="icon">
+                <i class="fas fa-globe"></i>
+            </span>
+            <span>{{context.host}}</span>
+        </div>
+        <div class="mb-2 snapshot-info-path">
+            <span class="icon">
+                <i class="fas fa-link"></i>
+            </span>
+            <a href="{{url}}" target="_blank">{{fullPath}}</a>
+        </div>
+        <div class="mb-2 snapshot-info-datalayer">
+            <span class="icon">
+                <i class="fas fa-layer-group"></i>
+            </span>
+            <span>{{context.name}}</span>
+        </div>
+        <div class="snapshot-info-datetime">
+            <span class="icon">
+                <i class="fas fa-clock"></i>
+            </span>
+            <span>{{formattedTimestamp}}</span>
+        </div>
+        <div class="snapshot-info-storage-size">
+            <span class="icon">
+                <i class="fas fa-database"></i>
+            </span>
+            <span>{{datalayerKiloOctet}}</span>
+        </div>
+    </div>
+</div>
