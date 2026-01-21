@@ -9,8 +9,7 @@
     "tabs"
   ],
   "host_permissions": [
-    "https://fls.doubleclick.net/*",
-    "https://ad.doubleclick.net/*"
+    "<all_urls>"
   ],
   "background": {
     "service_worker": "background.js"
