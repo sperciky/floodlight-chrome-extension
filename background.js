@@ -87,10 +87,22 @@ function parseFloodlightUrl(url) {
 /**
  * Listen for Floodlight requests
  */
-console.log('[Floodlight Debugger] Setting up webRequest listener...');
+console.log('[Floodlight Debugger] Setting up webRequest listeners...');
+
+// Test listener for ALL requests to see if webRequest is working at all
+chrome.webRequest.onBeforeRequest.addListener(
+  (details) => {
+    if (details.url.includes('doubleclick')) {
+      console.log('[Floodlight Debugger] onBeforeRequest - Doubleclick request detected!', details.url);
+    }
+  },
+  { urls: ["<all_urls>"] }
+);
+
+// Main listener for completed Floodlight requests
 chrome.webRequest.onCompleted.addListener(
   (details) => {
-    console.log('[Floodlight Debugger] Request intercepted!', details.url);
+    console.log('[Floodlight Debugger] onCompleted - Request intercepted!', details.url);
     console.log('[Floodlight Debugger] Tracking enabled:', trackingEnabled);
     console.log('[Floodlight Debugger] Tab ID:', details.tabId);
 
@@ -125,7 +137,18 @@ chrome.webRequest.onCompleted.addListener(
     ]
   }
 );
-console.log('[Floodlight Debugger] webRequest listener registered');
+
+// Additional test listener with onResponseStarted
+chrome.webRequest.onResponseStarted.addListener(
+  (details) => {
+    if (details.url.includes('doubleclick')) {
+      console.log('[Floodlight Debugger] onResponseStarted - Doubleclick response!', details.url);
+    }
+  },
+  { urls: ["<all_urls>"] }
+);
+
+console.log('[Floodlight Debugger] All webRequest listeners registered');
 
 /**
  * Listen for tab updates (page navigation)
