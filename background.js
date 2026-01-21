@@ -133,7 +133,9 @@ chrome.webRequest.onCompleted.addListener(
   {
     urls: [
       "https://fls.doubleclick.net/*",
-      "https://ad.doubleclick.net/*"
+      "https://*.fls.doubleclick.net/*",
+      "https://ad.doubleclick.net/*",
+      "https://*.ad.doubleclick.net/*"
     ]
   }
 );
