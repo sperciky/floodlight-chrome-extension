@@ -34,6 +34,8 @@ chrome.storage.onChanged.addListener((changes, namespace) => {
 
 /**
  * Parse URL parameters from a Floodlight request
+ * Floodlight uses semicolon-separated parameters in the URL path
+ * Example: https://12345.fls.doubleclick.net/activityi;src=12345;type=counter;cat=test;ord=123
  * @param {string} url - The full request URL
  * @returns {Object} - Parsed parameters
  */
@@ -41,7 +43,26 @@ function parseFloodlightUrl(url) {
   const urlObj = new URL(url);
   const params = {};
 
-  // Extract all URL parameters
+  // Extract parameters from the URL path (semicolon-separated)
+  // Floodlight parameters come after /activity or /activityi in the path
+  const pathname = urlObj.pathname;
+
+  // Find the part after /activity or /activityi
+  const activityMatch = pathname.match(/\/activity[^;]*(;.*)/);
+  if (activityMatch && activityMatch[1]) {
+    // Split by semicolons and parse key=value pairs
+    const pathParams = activityMatch[1].substring(1); // Remove leading semicolon
+    const paramPairs = pathParams.split(';');
+
+    paramPairs.forEach(pair => {
+      const [key, value] = pair.split('=');
+      if (key && value !== undefined) {
+        params[key] = decodeURIComponent(value);
+      }
+    });
+  }
+
+  // Also extract standard query string parameters (after ?)
   for (const [key, value] of urlObj.searchParams.entries()) {
     params[key] = value;
   }
