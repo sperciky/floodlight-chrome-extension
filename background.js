@@ -1,4 +1,5 @@
 // Background service worker for Floodlight debugger
+console.log('[Floodlight Debugger] Service worker starting...');
 
 // In-memory storage for captured requests (per tab)
 let capturedRequests = {};
@@ -86,27 +87,36 @@ function parseFloodlightUrl(url) {
 /**
  * Listen for Floodlight requests
  */
+console.log('[Floodlight Debugger] Setting up webRequest listener...');
 chrome.webRequest.onCompleted.addListener(
   (details) => {
+    console.log('[Floodlight Debugger] Request intercepted!', details.url);
+    console.log('[Floodlight Debugger] Tracking enabled:', trackingEnabled);
+    console.log('[Floodlight Debugger] Tab ID:', details.tabId);
+
     // Only capture if tracking is enabled
     if (!trackingEnabled) {
+      console.log('[Floodlight Debugger] Tracking disabled, skipping');
       return;
     }
 
     // Parse the Floodlight request
     const parsedData = parseFloodlightUrl(details.url);
+    console.log('[Floodlight Debugger] Parsed data:', parsedData);
 
     // Store the request for the specific tab
     capturedRequests[details.tabId] = parsedData;
+    console.log('[Floodlight Debugger] Stored in memory for tab', details.tabId);
 
     // If persistence is enabled, also save to chrome.storage.local
     if (persistData) {
       chrome.storage.local.set({
         [`floodlight_data_${details.tabId}`]: parsedData
       });
+      console.log('[Floodlight Debugger] Saved to storage');
     }
 
-    console.log('[Floodlight Debugger] Captured request:', parsedData);
+    console.log('[Floodlight Debugger] Request captured successfully');
   },
   {
     urls: [
@@ -115,6 +125,7 @@ chrome.webRequest.onCompleted.addListener(
     ]
   }
 );
+console.log('[Floodlight Debugger] webRequest listener registered');
 
 /**
  * Listen for tab updates (page navigation)
@@ -145,25 +156,33 @@ chrome.tabs.onRemoved.addListener((tabId) => {
  */
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === 'getFloodlightData') {
+    console.log('[Floodlight Debugger] getFloodlightData request received');
     // Get current tab
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
       if (tabs[0]) {
         const tabId = tabs[0].id;
+        console.log('[Floodlight Debugger] Current tab ID:', tabId);
+        console.log('[Floodlight Debugger] Captured requests:', capturedRequests);
 
         // First check in-memory storage
         if (capturedRequests[tabId]) {
+          console.log('[Floodlight Debugger] Found data in memory:', capturedRequests[tabId]);
           sendResponse({ data: capturedRequests[tabId] });
         } else if (persistData) {
           // If persistence is enabled, check chrome.storage
+          console.log('[Floodlight Debugger] Checking storage...');
           chrome.storage.local.get([`floodlight_data_${tabId}`], (result) => {
             const data = result[`floodlight_data_${tabId}`] || null;
+            console.log('[Floodlight Debugger] Storage data:', data);
             sendResponse({ data: data });
           });
           return true; // Will respond asynchronously
         } else {
+          console.log('[Floodlight Debugger] No data found for tab', tabId);
           sendResponse({ data: null });
         }
       } else {
+        console.log('[Floodlight Debugger] No active tab found');
         sendResponse({ data: null });
       }
     });
