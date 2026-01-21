@@ -102,6 +102,17 @@ chrome.webRequest.onBeforeRequest.addListener(
 // Main listener for completed Floodlight requests
 chrome.webRequest.onCompleted.addListener(
   (details) => {
+    // Filter for Floodlight/doubleclick URLs only
+    if (!details.url.includes('doubleclick.net')) {
+      return;
+    }
+
+    // Filter for activity endpoints only (not favicon, etc)
+    // Note: Floodlight uses both /activity and /activityi
+    if (!details.url.includes('/activity') && !details.url.includes('/activityi')) {
+      return;
+    }
+
     console.log('[Floodlight Debugger] onCompleted - Request intercepted!', details.url);
     console.log('[Floodlight Debugger] Tracking enabled:', trackingEnabled);
     console.log('[Floodlight Debugger] Tab ID:', details.tabId);
@@ -130,14 +141,7 @@ chrome.webRequest.onCompleted.addListener(
 
     console.log('[Floodlight Debugger] Request captured successfully');
   },
-  {
-    urls: [
-      "https://fls.doubleclick.net/*",
-      "https://*.fls.doubleclick.net/*",
-      "https://ad.doubleclick.net/*",
-      "https://*.ad.doubleclick.net/*"
-    ]
-  }
+  { urls: ["<all_urls>"] }
 );
 
 // Additional test listener with onResponseStarted
