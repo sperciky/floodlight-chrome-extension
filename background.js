@@ -109,7 +109,10 @@ chrome.webRequest.onCompleted.addListener(
     console.log('[Floodlight Debugger] Captured request:', parsedData);
   },
   {
-    urls: ["https://fls.doubleclick.net/*"]
+    urls: [
+      "https://fls.doubleclick.net/*",
+      "https://ad.doubleclick.net/*"
+    ]
   }
 );
 

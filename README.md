@@ -9,7 +9,9 @@ This extension clearly answers the question:
 
 ## Features
 
-- **Real-time Floodlight Detection**: Automatically captures requests to `https://fls.doubleclick.net/*`
+- **Real-time Floodlight Detection**: Automatically captures requests to:
+  - `https://fls.doubleclick.net/*`
+  - `https://ad.doubleclick.net/*`
 - **Parameter Parsing**: Extracts and displays all Floodlight parameters including:
   - Required parameters (src, type, cat, ord)
   - Sales-specific parameters (qty, cost)
