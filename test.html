@@ -192,6 +192,19 @@
     </div>
   </div>
 
+  <!-- Test Section 7: ad.doubleclick.net Endpoint -->
+  <div class="test-section">
+    <h3>7. Test ad.doubleclick.net/activity Endpoint</h3>
+    <p>This fires to the alternative Floodlight endpoint with many additional parameters.</p>
+    <div class="code-block">
+      ad.doubleclick.net/activity; src=12455908; type=ro_en00; cat=ro_en0; u1=product123; u2=category456; u3=subcategory789
+    </div>
+    <button onclick="fireAdDoubleClickTag()">Fire ad.doubleclick.net Tag</button>
+    <div class="success" id="addoubleclick-result" style="display:none;">
+      ✓ ad.doubleclick.net tag fired! Check the extension popup.
+    </div>
+  </div>
+
   <!-- Console Log -->
   <h2>Console Log</h2>
   <div id="console">
@@ -313,6 +326,23 @@
           resultDiv.style.display = 'none';
         }, 2000);
       }, 2000);
+    }
+
+    // Test 7: ad.doubleclick.net Endpoint
+    function fireAdDoubleClickTag() {
+      const params = `src=12455908;type=ro_en00;cat=ro_en0;u1=product123;u2=category456;u3=subcategory789;ord=${getRandomOrd()}`;
+      const baseUrl = 'https://ad.doubleclick.net/activity';
+      const url = `${baseUrl};${params}?`;
+
+      const img = new Image(1, 1);
+      img.src = url;
+
+      log(`Firing ad.doubleclick.net: ${params}`);
+      document.getElementById('addoubleclick-result').style.display = 'block';
+      setTimeout(() => {
+        document.getElementById('addoubleclick-result').style.display = 'none';
+      }, 3000);
+      return url;
     }
 
     // Auto-fire a welcome tag on page load
