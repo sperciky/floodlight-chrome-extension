@@ -12,6 +12,10 @@ const backBtn = document.getElementById('backBtn');
 const noDataState = document.getElementById('noDataState');
 const accordionContainer = document.getElementById('accordionContainer');
 
+// Track which accordion is currently open
+let currentOpenIndex = null;
+let lastDataLength = 0;
+
 /**
  * Initialize the popup
  */
@@ -58,12 +62,31 @@ function loadFloodlightData() {
 function displayAccordions(dataArray) {
   noDataState.style.display = 'none';
   accordionContainer.style.display = 'block';
+
+  // Only rebuild if data length changed (new requests added)
+  if (dataArray.length === lastDataLength) {
+    return; // No changes, keep existing accordions with their state
+  }
+
+  // Store which accordion was open before rebuilding
+  const wasOpen = currentOpenIndex;
+
+  // Rebuild accordions
   accordionContainer.innerHTML = '';
 
   dataArray.forEach((data, index) => {
     const accordionItem = createAccordionItem(data, index);
     accordionContainer.appendChild(accordionItem);
+
+    // Restore open state if this was the open accordion
+    // Or auto-open the first (newest) item if it's new
+    if (index === wasOpen || (wasOpen === null && index === 0 && dataArray.length > lastDataLength)) {
+      accordionItem.classList.add('active');
+      currentOpenIndex = index;
+    }
   });
+
+  lastDataLength = dataArray.length;
 }
 
 /**
@@ -208,10 +231,12 @@ function createParamRow(label, value, isRequired) {
  */
 function toggleAccordion(accordion) {
   const isActive = accordion.classList.contains('active');
+  const index = parseInt(accordion.dataset.index);
 
   if (isActive) {
     // Close this accordion
     accordion.classList.remove('active');
+    currentOpenIndex = null;
   } else {
     // Close all other accordions
     document.querySelectorAll('.accordion-item.active').forEach(item => {
@@ -220,6 +245,7 @@ function toggleAccordion(accordion) {
 
     // Open this accordion
     accordion.classList.add('active');
+    currentOpenIndex = index;
   }
 }
 
@@ -229,6 +255,8 @@ function toggleAccordion(accordion) {
 function showNoDataState() {
   noDataState.style.display = 'block';
   accordionContainer.style.display = 'none';
+  currentOpenIndex = null;
+  lastDataLength = 0;
 }
 
 /**
