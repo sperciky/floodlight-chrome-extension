@@ -10,16 +10,7 @@ const clearBtn = document.getElementById('clearBtn');
 const settingsBtn = document.getElementById('settingsBtn');
 const backBtn = document.getElementById('backBtn');
 const noDataState = document.getElementById('noDataState');
-const dataDisplay = document.getElementById('dataDisplay');
-
-// Data display elements
-const activityType = document.getElementById('activityType');
-const timestamp = document.getElementById('timestamp');
-const requiredParams = document.getElementById('requiredParams');
-const salesParams = document.getElementById('salesParams');
-const customParams = document.getElementById('customParams');
-const customVarsSection = document.getElementById('customVarsSection');
-const fullUrl = document.getElementById('fullUrl');
+const accordionContainer = document.getElementById('accordionContainer');
 
 /**
  * Initialize the popup
@@ -51,9 +42,9 @@ function loadFloodlightData() {
   console.log('[Popup] Requesting Floodlight data...');
   chrome.runtime.sendMessage({ action: 'getFloodlightData' }, (response) => {
     console.log('[Popup] Received response:', response);
-    if (response && response.data) {
+    if (response && response.data && Array.isArray(response.data) && response.data.length > 0) {
       console.log('[Popup] Displaying data:', response.data);
-      displayData(response.data);
+      displayAccordions(response.data);
     } else {
       console.log('[Popup] No data, showing empty state');
       showNoDataState();
@@ -62,134 +53,174 @@ function loadFloodlightData() {
 }
 
 /**
- * Display Floodlight data in the UI
+ * Display multiple Floodlight requests as accordions
  */
-function displayData(data) {
+function displayAccordions(dataArray) {
   noDataState.style.display = 'none';
-  dataDisplay.style.display = 'block';
+  accordionContainer.style.display = 'block';
+  accordionContainer.innerHTML = '';
 
-  // Activity Type
-  activityType.textContent = data.activityType;
-  activityType.className = 'badge ' + (data.activityType === 'Sales' ? 'badge-sales' : 'badge-counter');
-
-  // Timestamp
-  const date = new Date(data.timestamp);
-  timestamp.textContent = formatTimestamp(date);
-
-  // Required Parameters
-  displayRequiredParams(data.required);
-
-  // Sales Parameters
-  displaySalesParams(data.sales);
-
-  // Custom Variables
-  displayCustomParams(data.custom);
-
-  // Full URL
-  fullUrl.textContent = data.url;
-}
-
-/**
- * Display required parameters table
- */
-function displayRequiredParams(required) {
-  requiredParams.innerHTML = '';
-
-  const params = [
-    { name: 'src', label: 'Floodlight Config ID', value: required.src },
-    { name: 'type', label: 'Activity Group', value: required.type },
-    { name: 'cat', label: 'Activity Tag', value: required.cat },
-    { name: 'ord', label: 'Order/Random', value: required.ord }
-  ];
-
-  params.forEach(param => {
-    const row = createParamRow(param.label, param.value, true);
-    requiredParams.appendChild(row);
+  dataArray.forEach((data, index) => {
+    const accordionItem = createAccordionItem(data, index);
+    accordionContainer.appendChild(accordionItem);
   });
 }
 
 /**
- * Display sales parameters table
+ * Create an accordion item for a single Floodlight request
  */
-function displaySalesParams(sales) {
-  salesParams.innerHTML = '';
+function createAccordionItem(data, index) {
+  const accordion = document.createElement('div');
+  accordion.className = 'accordion-item';
+  accordion.dataset.index = index;
 
-  const params = [
-    { name: 'qty', label: 'Quantity', value: sales.qty },
-    { name: 'cost', label: 'Revenue', value: sales.cost }
-  ];
+  // Create accordion header with title format: "activity_group (config_id)"
+  const title = `${data.required.type || 'unknown'} (${data.required.src || 'unknown'})`;
 
-  params.forEach(param => {
-    const row = createParamRow(param.label, param.value, false);
-    salesParams.appendChild(row);
-  });
+  accordion.innerHTML = `
+    <div class="accordion-header">
+      <div class="accordion-title">
+        <span class="accordion-position">#${index + 1}</span>
+        <span class="accordion-name">${title}</span>
+        <span class="accordion-badge ${data.activityType.toLowerCase()}">${data.activityType}</span>
+      </div>
+      <div class="accordion-timestamp">${formatTimestamp(new Date(data.timestamp))}</div>
+      <span class="accordion-arrow">▼</span>
+    </div>
+    <div class="accordion-body">
+      ${createAccordionBody(data)}
+    </div>
+  `;
+
+  // Add click handler to header
+  const header = accordion.querySelector('.accordion-header');
+  header.addEventListener('click', () => toggleAccordion(accordion));
+
+  return accordion;
 }
 
 /**
- * Display custom variables table
+ * Create the body content for an accordion
  */
-function displayCustomParams(custom) {
-  customParams.innerHTML = '';
+function createAccordionBody(data) {
+  let html = '';
 
-  const customKeys = Object.keys(custom);
+  // Required Parameters Section
+  html += `
+    <div class="param-section">
+      <h4>Required Parameters</h4>
+      <table class="param-table">
+        <tbody>
+          ${createParamRow('Floodlight Config ID', data.required.src, true)}
+          ${createParamRow('Activity Group', data.required.type, true)}
+          ${createParamRow('Activity Tag', data.required.cat, true)}
+          ${createParamRow('Order/Random', data.required.ord, true)}
+        </tbody>
+      </table>
+    </div>
+  `;
 
-  if (customKeys.length === 0) {
-    customVarsSection.style.display = 'none';
-    return;
+  // Sales Parameters Section
+  const hasSalesParams = data.sales.qty || data.sales.cost;
+  html += `
+    <div class="param-section">
+      <h4>Sales Parameters</h4>
+      <table class="param-table">
+        <tbody>
+          ${createParamRow('Quantity', data.sales.qty, false)}
+          ${createParamRow('Revenue', data.sales.cost, false)}
+        </tbody>
+      </table>
+    </div>
+  `;
+
+  // Custom Variables Section
+  const customKeys = Object.keys(data.custom);
+  if (customKeys.length > 0) {
+    html += `
+      <div class="param-section">
+        <h4>Custom Variables (${customKeys.length})</h4>
+        <table class="param-table">
+          <tbody>
+    `;
+
+    customKeys.sort((a, b) => {
+      const numA = parseInt(a.substring(1));
+      const numB = parseInt(b.substring(1));
+      return numA - numB;
+    });
+
+    customKeys.forEach(key => {
+      html += createParamRow(key, data.custom[key], false);
+    });
+
+    html += `
+          </tbody>
+        </table>
+      </div>
+    `;
   }
 
-  customVarsSection.style.display = 'block';
+  // Full URL Section
+  html += `
+    <div class="param-section">
+      <h4>Full Request URL</h4>
+      <div class="url-box">
+        <code>${escapeHtml(data.url)}</code>
+      </div>
+    </div>
+  `;
 
-  customKeys.sort((a, b) => {
-    const numA = parseInt(a.substring(1));
-    const numB = parseInt(b.substring(1));
-    return numA - numB;
-  });
-
-  customKeys.forEach(key => {
-    const row = createParamRow(key, custom[key], false);
-    customParams.appendChild(row);
-  });
+  return html;
 }
 
 /**
  * Create a parameter table row
  */
 function createParamRow(label, value, isRequired) {
-  const row = document.createElement('tr');
+  const hasValue = value !== null && value !== undefined && value !== '';
+  let rowClass = '';
+  let valueContent = '';
 
-  // Parameter name cell
-  const nameCell = document.createElement('td');
-  nameCell.textContent = label;
-  nameCell.className = 'param-name';
-
-  // Value cell
-  const valueCell = document.createElement('td');
-  valueCell.className = 'param-value';
-
-  if (value === null || value === undefined || value === '') {
-    // Missing or empty value
+  if (!hasValue) {
     if (isRequired) {
-      valueCell.innerHTML = '<span class="missing required">Missing (Required)</span>';
-      row.className = 'row-error';
+      rowClass = 'row-error';
+      valueContent = '<span class="missing required">Missing (Required)</span>';
     } else {
-      valueCell.innerHTML = '<span class="missing optional">-</span>';
-      row.className = 'row-optional';
+      rowClass = 'row-optional';
+      valueContent = '<span class="missing optional">-</span>';
     }
   } else {
-    // Value present
-    valueCell.textContent = value;
-    if (isRequired) {
-      row.className = 'row-valid';
-    } else {
-      row.className = 'row-present';
-    }
+    rowClass = isRequired ? 'row-valid' : 'row-present';
+    valueContent = `<span>${escapeHtml(String(value))}</span>`;
   }
 
-  row.appendChild(nameCell);
-  row.appendChild(valueCell);
+  return `
+    <tr class="${rowClass}">
+      <td class="param-name">${escapeHtml(label)}</td>
+      <td class="param-value">${valueContent}</td>
+    </tr>
+  `;
+}
 
-  return row;
+/**
+ * Toggle accordion open/closed
+ */
+function toggleAccordion(accordion) {
+  const isActive = accordion.classList.contains('active');
+
+  if (isActive) {
+    // Close this accordion
+    accordion.classList.remove('active');
+  } else {
+    // Close all other accordions
+    document.querySelectorAll('.accordion-item.active').forEach(item => {
+      item.classList.remove('active');
+    });
+
+    // Open this accordion
+    accordion.classList.add('active');
+  }
 }
 
 /**
@@ -197,7 +228,7 @@ function createParamRow(label, value, isRequired) {
  */
 function showNoDataState() {
   noDataState.style.display = 'block';
-  dataDisplay.style.display = 'none';
+  accordionContainer.style.display = 'none';
 }
 
 /**
@@ -210,6 +241,15 @@ function formatTimestamp(date) {
   const ms = String(date.getMilliseconds()).padStart(3, '0');
 
   return `${hours}:${minutes}:${seconds}.${ms}`;
+}
+
+/**
+ * Escape HTML to prevent XSS
+ */
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
 }
 
 /**

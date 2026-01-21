@@ -1,7 +1,7 @@
 // Background service worker for Floodlight debugger
 console.log('[Floodlight Debugger] Service worker starting...');
 
-// In-memory storage for captured requests (per tab)
+// In-memory storage for captured requests (per tab) - stores array of requests
 let capturedRequests = {};
 
 // Tracking state (enabled by default)
@@ -152,14 +152,25 @@ chrome.webRequest.onCompleted.addListener(
     const parsedData = parseFloodlightUrl(details.url);
     console.log('[Floodlight Debugger] Parsed data:', parsedData);
 
-    // Store the request for the specific tab
-    capturedRequests[details.tabId] = parsedData;
-    console.log('[Floodlight Debugger] Stored in memory for tab', details.tabId);
+    // Initialize array for this tab if it doesn't exist
+    if (!capturedRequests[details.tabId]) {
+      capturedRequests[details.tabId] = [];
+    }
+
+    // Add the new request to the beginning of the array (most recent first)
+    capturedRequests[details.tabId].unshift(parsedData);
+
+    // Limit to last 50 requests per tab to avoid memory issues
+    if (capturedRequests[details.tabId].length > 50) {
+      capturedRequests[details.tabId] = capturedRequests[details.tabId].slice(0, 50);
+    }
+
+    console.log('[Floodlight Debugger] Stored in memory for tab', details.tabId, `(Total: ${capturedRequests[details.tabId].length})`);
 
     // If persistence is enabled, also save to chrome.storage.local
     if (persistData) {
       chrome.storage.local.set({
-        [`floodlight_data_${details.tabId}`]: parsedData
+        [`floodlight_data_${details.tabId}`]: capturedRequests[details.tabId]
       });
       console.log('[Floodlight Debugger] Saved to storage');
     }
