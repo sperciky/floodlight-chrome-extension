@@ -48,10 +48,14 @@ function loadSettings() {
  * Load Floodlight data from background script
  */
 function loadFloodlightData() {
+  console.log('[Popup] Requesting Floodlight data...');
   chrome.runtime.sendMessage({ action: 'getFloodlightData' }, (response) => {
+    console.log('[Popup] Received response:', response);
     if (response && response.data) {
+      console.log('[Popup] Displaying data:', response.data);
       displayData(response.data);
     } else {
+      console.log('[Popup] No data, showing empty state');
       showNoDataState();
     }
   });
