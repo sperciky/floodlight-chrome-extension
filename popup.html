@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Floodlight DV360 Debugger</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <!-- Main Screen -->
+  <div id="mainScreen" class="screen active">
+    <div class="header">
+      <h1>Floodlight Debugger</h1>
+      <div class="toggle-container">
+        <label class="switch">
+          <input type="checkbox" id="trackingToggle" checked>
+          <span class="slider"></span>
+        </label>
+        <span id="trackingStatus" class="status-text enabled">Tracking Enabled</span>
+      </div>
+    </div>
+
+    <div class="content">
+      <!-- No Data State -->
+      <div id="noDataState" class="no-data">
+        <p>No Floodlight requests captured yet.</p>
+        <p class="hint">Navigate to a page with Floodlight tags to see data.</p>
+      </div>
+
+      <!-- Data Display -->
+      <div id="dataDisplay" class="data-display" style="display: none;">
+        <!-- Activity Type & Timestamp -->
+        <div class="info-section">
+          <div class="info-item">
+            <span class="label">Activity Type:</span>
+            <span id="activityType" class="badge">-</span>
+          </div>
+          <div class="info-item">
+            <span class="label">Timestamp:</span>
+            <span id="timestamp" class="timestamp">-</span>
+          </div>
+        </div>
+
+        <!-- Required Parameters -->
+        <div class="section">
+          <h3>Required Parameters</h3>
+          <table class="param-table">
+            <thead>
+              <tr>
+                <th>Parameter</th>
+                <th>Value</th>
+              </tr>
+            </thead>
+            <tbody id="requiredParams">
+              <!-- Populated by JS -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Sales Parameters -->
+        <div class="section">
+          <h3>Sales Parameters</h3>
+          <table class="param-table">
+            <thead>
+              <tr>
+                <th>Parameter</th>
+                <th>Value</th>
+              </tr>
+            </thead>
+            <tbody id="salesParams">
+              <!-- Populated by JS -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Custom Variables -->
+        <div class="section" id="customVarsSection" style="display: none;">
+          <h3>Custom Variables (u1-u100)</h3>
+          <table class="param-table">
+            <thead>
+              <tr>
+                <th>Parameter</th>
+                <th>Value</th>
+              </tr>
+            </thead>
+            <tbody id="customParams">
+              <!-- Populated by JS -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Full URL -->
+        <div class="section">
+          <h3>Full Request URL</h3>
+          <div class="url-container">
+            <code id="fullUrl">-</code>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="actions">
+      <button id="clearBtn" class="btn btn-secondary">Clear Data</button>
+      <button id="settingsBtn" class="btn btn-primary">Settings</button>
+    </div>
+  </div>
+
+  <!-- Settings Screen -->
+  <div id="settingsScreen" class="screen">
+    <div class="header">
+      <button id="backBtn" class="back-btn">← Back</button>
+      <h1>Settings</h1>
+    </div>
+
+    <div class="content">
+      <div class="settings-section">
+        <div class="setting-item">
+          <div class="setting-info">
+            <h3>Persist Data Across Page Navigations</h3>
+            <p class="description">
+              By default, data is cleared when navigating to a new page.
+              Enable this to keep data until manually cleared.
+            </p>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="persistToggle">
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <div class="settings-info-box">
+        <h4>Data Lifecycle</h4>
+        <ul>
+          <li><strong>Default (OFF):</strong> Data is cleared on every page navigation</li>
+          <li><strong>Enabled (ON):</strong> Data persists until you click "Clear Data" or disable the extension</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
