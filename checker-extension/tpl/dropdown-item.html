@@ -1,0 +1,6 @@
+{{^dropdownItems}}
+<a class="dropdown-item" data-value="-">-</a>
+{{/dropdownItems}}
+{{#dropdownItems}}
+<a class="dropdown-item{{#isFirst}} is-active{{/isFirst}}" data-value="{{name}}">{{name}}</a>
+{{/dropdownItems}}

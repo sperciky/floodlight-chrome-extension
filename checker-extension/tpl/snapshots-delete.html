@@ -1,0 +1,9 @@
+<div class="delete-confirmation">
+    <p class="has-text-weight-bold">Are you sure you want to delete {{count}} snapshot{{#plural}}s{{/plural}}?</p>
+    <br>
+    <div class="snapshot-details-container">
+        {{#snapshots}}
+            {{{snapshotDetails}}}
+        {{/snapshots}}
+    </div>
+</div>

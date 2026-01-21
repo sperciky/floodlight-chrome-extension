@@ -1,0 +1,208 @@
+
+<div class="viewnav">
+    <div class="viewnav-container">
+        <div class="viewnav-primary">
+            <div class="box">
+                <p class="selected-snapshots-count">
+                    <span class="selected">{{numberOfSelected}}</span> / <span class="total">{{numberOfSnapshots}}</span>
+                    <span class="icon">
+                        <i class="fas fa-camera"></i>
+                    </span>
+                </p>
+                <div class="actions-buttons-for-selected-snapshots hidden">
+                    <br>
+                    <div class="control">
+                        <button class="button is-rounded is-fullwidth js-open-selected-snapshot-url">
+                            <span class="icon">
+                                <i class="fas fa-globe"></i>
+                            </span>
+                            <span>Open URL in new tabs</span>
+                        </button>
+                    </div>
+                    <div class="control">
+                        <button class="button  is-danger is-rounded is-fullwidth js-delete-selected-snapshot">
+                            <span class="icon">
+                                <i class="fas fa-trash"></i>
+                            </span>
+                            <span>Delete Snapshots</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="viewnav-secondary">
+            <div class="box">
+                <div class="snapshot-view-creation">
+                    <div class="snapshot-view-creation-container">
+                        <div class="field">
+                            <label class="label">Search</label>
+                            <div class="control has-icons-right">
+                                <input type="text" id="snapshots-table-search" placeholder="Search">
+                                <span class="icon is-small is-right clear-search" style="pointer-events: all; cursor: pointer;">
+                                    <i class="fas fa-times"></i>
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <label class="label">Hostname</label>
+                            <div class="control">
+                                <div class="multiselect js-filter-hostname">
+                                    <div class="multiselect-selected">
+                                        <span class="placeholder">All hostnames</span>
+                                    </div>
+                                    <div class="multiselect-dropdown">
+                                        <div class="multiselect-search">
+                                            <input type="text" placeholder="Search hostnames...">
+                                        </div>
+                                        <div class="multiselect-options">
+                                            {{#hostnames}}
+                                            <label class="multiselect-option">
+                                                <input type="checkbox" value="{{.}}">
+                                                <span>{{.}}</span>
+                                            </label>
+                                            {{/hostnames}}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    
+                        <div class="field">
+                            <label class="label">DataLayer</label>
+                            <div class="control">
+                                <div class="multiselect js-filter-datalayer">
+                                    <div class="multiselect-selected">
+                                        <span class="placeholder">All dataLayers</span>
+                                    </div>
+                                    <div class="multiselect-dropdown">
+                                        <div class="multiselect-search">
+                                            <input type="text" placeholder="Search datalayers...">
+                                        </div>
+                                        <div class="multiselect-options">
+                                            {{#datalayers}}
+                                            <label class="multiselect-option">
+                                                <input type="checkbox" value="{{.}}">
+                                                <span>{{.}}</span>
+                                            </label>
+                                            {{/datalayers}}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    
+                        <div class="field">
+                            <div class="control">
+                                <button class="button is-primary is-fullwidth js-save-view">
+                                    <span class="icon">
+                                        <i class="fas fa-save"></i>
+                                    </span>
+                                    <span>Save View</span>
+                                </button>
+                            </div>
+                        </div>
+                
+                        <div class="snapshots-views-list">
+                            <aside class="menu">
+                                <p class="menu-label">Views</p>
+                                <ul class="menu-list">
+                                    <li class="snapshot-views-item is-fullwidth " data-snapshots-view-id="none">
+                                        <span class="icon">
+                                            <i class="fas fa-eye"></i>
+                                        </span>
+                                        <span class="view-name">
+                                            All Snapshots
+                                        </span>
+                                    </li>
+                                    {{#snapshotsViews}}
+                                    <li class="snapshot-views-item is-fullwidth " data-snapshots-view-id="{{id}}">
+                                        <span class="icon">
+                                            <i class="fas fa-eye"></i>
+                                        </span>
+                                        <span class="view-name">
+                                            {{name}}
+                                        </span>
+                                        <button class="button is-danger is-small is-light is-pulled-right js-delete-snapshots-view" data-snapshots-view-id="{{id}}">
+                                            <span class="icon"><i class="fas fa-trash"></i></span>
+                                        </button>
+                                    </li>
+                                    {{/snapshotsViews}}
+                                </ul>
+                            </aside>
+                        </div>
+                
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        
+    </div>
+</div>
+<div class="wrapper">
+    <div class="snapshots-main-view">
+        <div class="snapshot-main-view-content">
+            <div class="snapshots-container">
+        
+                <table id="snapshots-table" class="table is-fullwidth" style="width: 100%;">
+                    <thead>
+                        <tr>
+                            <th class="has-text-centered" style="width: 40px;">
+                                <label class="checkbox">
+                                    <input type="checkbox" class="js-select-all-snapshots">
+                                    <span class="checkmark"></span>
+                                </label>
+                            </th>
+                            <th>Date</th>
+                            <th>Time</th>
+                            <th>Host</th>
+                            <th>Path</th>
+                            <th>Main events</th>
+                            <th>Layer</th>
+                            <th></th>
+                            <th style="display: none;">Timestamp</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{#snapshots}}
+                        <tr data-snapshot-id="{{id}}">
+                            <td class="has-text-centered">
+                                <label class="checkbox">
+                                    <input type="checkbox" class="js-select-snapshot" data-snapshot-id="{{id}}">
+                                    <span class="checkmark"></span>
+                                </label>
+                            </td>
+                            <td>{{formattedDate}}</td>
+                            <td>{{formattedTime}}</td>
+                            <td>{{context.host}}</td>
+                            <td>
+                                <a href="https://{{context.host}}{{context.path}}{{context.query}}{{context.hash}}" target="_blank">
+                                    {{context.path}}{{context.query}}{{context.hash}}
+                                </a>
+                            </td>
+                            <td>
+                                <div class="events-list">
+                                    {{#eventList}}
+                                    <span class="tag event-type-{{type}}">{{name}}</span>
+                                    {{/eventList}}
+                                </div>
+                            </td>
+                            <td>{{context.name}}</td>
+                            <td class="has-text-right">
+                                <div class="buttons is-justify-content-flex-end">
+                                    <button class="button is-link is-small is-rounded js-view-snapshot" data-snapshot-id="{{id}}">
+                                        <span class="icon"><i class="fas fa-eye"></i></span>
+                                    </button>
+                                </div>
+                            </td>
+                            <td style="display: none;">{{timestamp}}</td>
+                        </tr>
+                        {{/snapshots}}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
