@@ -86,10 +86,19 @@ function parseFloodlightUrl(url) {
   const hasSalesParams = params.qty || params.cost;
   const activityType = hasSalesParams ? 'Sales' : 'Counter';
 
+  // Determine endpoint type (fls.doubleclick.net vs ad.doubleclick.net)
+  let endpointType = 'unknown';
+  if (url.includes('fls.doubleclick.net')) {
+    endpointType = 'fls';
+  } else if (url.includes('ad.doubleclick.net')) {
+    endpointType = 'ad';
+  }
+
   return {
     timestamp: new Date().toISOString(),
     url: url,
     activityType: activityType,
+    endpointType: endpointType,
     required: {
       src: params.src || null,
       type: params.type || null,

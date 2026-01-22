@@ -194,6 +194,25 @@ input:checked + .slider:before {
   color: #f57c00;
 }
 
+/* Endpoint Type Badges */
+.accordion-badge.endpoint-fls {
+  background: #e8f5e9;
+  color: #2e7d32;
+  border: 1px solid #a5d6a7;
+}
+
+.accordion-badge.endpoint-ad {
+  background: #f3e5f5;
+  color: #7b1fa2;
+  border: 1px solid #ce93d8;
+}
+
+.accordion-badge.endpoint-unknown {
+  background: #f5f5f5;
+  color: #757575;
+  border: 1px solid #e0e0e0;
+}
+
 .accordion-timestamp {
   font-family: 'Courier New', monospace;
   font-size: 12px;
