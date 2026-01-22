@@ -242,20 +242,28 @@ chrome.tabs.onRemoved.addListener((tabId) => {
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === 'getFloodlightData') {
     console.log('[Floodlight Debugger] getFloodlightData request received');
+    console.log('[Floodlight Debugger] All captured requests by tab:', capturedRequests);
+    console.log('[Floodlight Debugger] Available tab IDs:', Object.keys(capturedRequests));
+
     // Get current tab
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
       if (tabs[0]) {
         const tabId = tabs[0].id;
         console.log('[Floodlight Debugger] Current tab ID:', tabId);
-        console.log('[Floodlight Debugger] Captured requests:', capturedRequests);
+        console.log('[Floodlight Debugger] Current tab URL:', tabs[0].url);
+        console.log('[Floodlight Debugger] Data exists for this tab:', !!capturedRequests[tabId]);
+
+        if (capturedRequests[tabId]) {
+          console.log('[Floodlight Debugger] Found', capturedRequests[tabId].length, 'requests in memory');
+        }
 
         // First check in-memory storage
         if (capturedRequests[tabId]) {
-          console.log('[Floodlight Debugger] Found data in memory:', capturedRequests[tabId]);
+          console.log('[Floodlight Debugger] Returning data from memory:', capturedRequests[tabId]);
           sendResponse({ data: capturedRequests[tabId] });
         } else if (persistData) {
           // If persistence is enabled, check chrome.storage
-          console.log('[Floodlight Debugger] Checking storage...');
+          console.log('[Floodlight Debugger] No memory data, checking storage...');
           chrome.storage.local.get([`floodlight_data_${tabId}`], (result) => {
             const data = result[`floodlight_data_${tabId}`] || null;
             console.log('[Floodlight Debugger] Storage data:', data);
@@ -264,6 +272,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
           return true; // Will respond asynchronously
         } else {
           console.log('[Floodlight Debugger] No data found for tab', tabId);
+          console.log('[Floodlight Debugger] Available tabs with data:', Object.keys(capturedRequests));
           sendResponse({ data: null });
         }
       } else {
