@@ -27,11 +27,15 @@ let filters = {
   configId: 'all'
 };
 
+// Templates for enriching display
+let templates = {};
+
 /**
  * Initialize the popup
  */
 function init() {
   loadSettings();
+  loadTemplates();
   loadFloodlightData();
   setupEventListeners();
 }
@@ -66,6 +70,16 @@ function loadSettings() {
       filters.configId = result.configIdFilter;
       configIdFilter.value = result.configIdFilter;
     }
+  });
+}
+
+/**
+ * Load templates from storage
+ */
+function loadTemplates() {
+  chrome.storage.local.get(['floodlightTemplates'], (result) => {
+    templates = result.floodlightTemplates || {};
+    console.log('[Popup] Loaded templates:', templates);
   });
 }
 
@@ -224,6 +238,18 @@ function createAccordionItem(data, index) {
 function createAccordionBody(data) {
   let html = '';
 
+  // Get template for this config ID
+  const template = templates[data.required.src];
+
+  // Enrich Activity Tag label if template exists
+  let activityTagLabel = 'Activity Tag';
+  if (template && template.activityGroups && data.required.cat) {
+    const activityName = template.activityGroups[data.required.cat];
+    if (activityName) {
+      activityTagLabel = `Activity Tag (${activityName})`;
+    }
+  }
+
   // Required Parameters Section
   html += `
     <div class="param-section">
@@ -232,7 +258,7 @@ function createAccordionBody(data) {
         <tbody>
           ${createParamRow('Floodlight Config ID', data.required.src, true)}
           ${createParamRow('Activity Group', data.required.type, true)}
-          ${createParamRow('Activity Tag', data.required.cat, true)}
+          ${createParamRow(activityTagLabel, data.required.cat, true)}
           ${createParamRow('Order/Random', data.required.ord, true)}
         </tbody>
       </table>
@@ -270,7 +296,12 @@ function createAccordionBody(data) {
     });
 
     customKeys.forEach(key => {
-      html += createParamRow(key, data.custom[key], false);
+      // Enrich custom parameter label if template exists
+      let paramLabel = key;
+      if (template && template.customParams && template.customParams[key]) {
+        paramLabel = `${key} (${template.customParams[key]})`;
+      }
+      html += createParamRow(paramLabel, data.custom[key], false);
     });
 
     html += `
@@ -453,16 +484,26 @@ function setupEventListeners() {
     });
   });
 
-  // Settings button
+  // Settings button - open settings page in new window
   settingsBtn.addEventListener('click', () => {
-    mainScreen.classList.remove('active');
-    settingsScreen.classList.add('active');
+    chrome.windows.create({
+      url: chrome.runtime.getURL('settings.html'),
+      type: 'popup',
+      width: 1000,
+      height: 700
+    });
   });
 
-  // Back button
-  backBtn.addEventListener('click', () => {
-    settingsScreen.classList.remove('active');
-    mainScreen.classList.add('active');
+  // Listen for template changes
+  chrome.storage.onChanged.addListener((changes, namespace) => {
+    if (namespace === 'local' && changes.floodlightTemplates) {
+      console.log('[Popup] Templates updated, reloading...');
+      loadTemplates();
+      // Force refresh display to show enriched labels
+      lastDataLength = -1;
+      const filteredData = applyFilters(allFloodlightData);
+      displayAccordions(filteredData);
+    }
   });
 
   // Refresh data every second when popup is open
