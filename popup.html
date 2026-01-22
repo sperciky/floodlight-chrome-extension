@@ -10,7 +10,13 @@
   <!-- Main Screen -->
   <div id="mainScreen" class="screen active">
     <div class="header">
-      <h1>Floodlight Debugger</h1>
+      <div class="header-top">
+        <h1>Floodlight Debugger</h1>
+        <div class="header-buttons">
+          <button id="clearBtn" class="btn-header btn-header-secondary">Clear Data</button>
+          <button id="settingsBtn" class="btn-header btn-header-primary">Settings</button>
+        </div>
+      </div>
 
       <!-- Single row with all controls -->
       <div class="controls-row">
@@ -54,12 +60,6 @@
       <div id="accordionContainer" class="accordion-container" style="display: none;">
         <!-- Accordion items will be dynamically inserted here -->
       </div>
-    </div>
-
-    <!-- Action Buttons -->
-    <div class="actions">
-      <button id="clearBtn" class="btn btn-secondary">Clear Data</button>
-      <button id="settingsBtn" class="btn btn-primary">Settings</button>
     </div>
   </div>
 
