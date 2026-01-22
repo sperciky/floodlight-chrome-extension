@@ -11,28 +11,32 @@
   <div id="mainScreen" class="screen active">
     <div class="header">
       <h1>Floodlight Debugger</h1>
-      <div class="toggle-container">
-        <label class="switch">
-          <input type="checkbox" id="trackingToggle" checked>
-          <span class="slider"></span>
-        </label>
-        <span id="trackingStatus" class="status-text enabled">Tracking Enabled</span>
-      </div>
 
-      <!-- Filters Section -->
-      <div class="filters-container">
-        <div class="filter-group">
-          <label class="filter-label">Endpoint:</label>
-          <select id="endpointFilter" class="filter-select">
-            <option value="both">Both</option>
-            <option value="fls">FLS Only</option>
-            <option value="ad">AD Only</option>
-          </select>
+      <!-- Single row with all controls -->
+      <div class="controls-row">
+        <!-- Tracking Toggle -->
+        <div class="toggle-container">
+          <label class="switch">
+            <input type="checkbox" id="trackingToggle" checked>
+            <span class="slider"></span>
+          </label>
+          <span id="trackingStatus" class="status-text enabled">Tracking Enabled</span>
         </div>
 
-        <div class="filter-group">
-          <label class="filter-label">Config ID:</label>
-          <select id="configIdFilter" class="filter-select">
+        <!-- Endpoint Toggle (3-state) -->
+        <div class="toggle-container">
+          <span class="control-label">Endpoint:</span>
+          <div class="three-state-toggle">
+            <button class="toggle-option active" data-value="both">Both</button>
+            <button class="toggle-option" data-value="fls">FLS</button>
+            <button class="toggle-option" data-value="ad">AD</button>
+          </div>
+        </div>
+
+        <!-- Config ID Dropdown -->
+        <div class="toggle-container">
+          <label class="control-label">Config ID:</label>
+          <select id="configIdFilter" class="filter-select-compact">
             <option value="all">All IDs</option>
           </select>
         </div>

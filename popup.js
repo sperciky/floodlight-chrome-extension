@@ -11,7 +11,7 @@ const settingsBtn = document.getElementById('settingsBtn');
 const backBtn = document.getElementById('backBtn');
 const noDataState = document.getElementById('noDataState');
 const accordionContainer = document.getElementById('accordionContainer');
-const endpointFilter = document.getElementById('endpointFilter');
+const endpointToggleButtons = document.querySelectorAll('.three-state-toggle .toggle-option');
 const configIdFilter = document.getElementById('configIdFilter');
 
 // Track which accordion is currently open
@@ -53,7 +53,14 @@ function loadSettings() {
   chrome.storage.local.get(['endpointFilter', 'configIdFilter'], (result) => {
     if (result.endpointFilter) {
       filters.endpoint = result.endpointFilter;
-      endpointFilter.value = result.endpointFilter;
+      // Update three-state toggle
+      endpointToggleButtons.forEach(btn => {
+        if (btn.dataset.value === result.endpointFilter) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      });
     }
     if (result.configIdFilter) {
       filters.configId = result.configIdFilter;
@@ -407,15 +414,24 @@ function setupEventListeners() {
     });
   });
 
-  // Endpoint filter
-  endpointFilter.addEventListener('change', (e) => {
-    filters.endpoint = e.target.value;
-    chrome.storage.local.set({ endpointFilter: e.target.value });
+  // Endpoint toggle (three-state)
+  endpointToggleButtons.forEach(button => {
+    button.addEventListener('click', (e) => {
+      const value = e.target.dataset.value;
 
-    // Reapply filters and update display
-    const filteredData = applyFilters(allFloodlightData);
-    lastDataLength = -1; // Force rebuild
-    displayAccordions(filteredData);
+      // Update active state
+      endpointToggleButtons.forEach(btn => btn.classList.remove('active'));
+      e.target.classList.add('active');
+
+      // Update filter
+      filters.endpoint = value;
+      chrome.storage.local.set({ endpointFilter: value });
+
+      // Reapply filters and update display
+      const filteredData = applyFilters(allFloodlightData);
+      lastDataLength = -1; // Force rebuild
+      displayAccordions(filteredData);
+    });
   });
 
   // Config ID filter
