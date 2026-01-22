@@ -7,7 +7,6 @@ const trackingToggle = document.getElementById('trackingToggle');
 const trackingStatus = document.getElementById('trackingStatus');
 const persistToggle = document.getElementById('persistToggle');
 const persistToggleHeader = document.getElementById('persistToggleHeader');
-const showAllTabsToggle = document.getElementById('showAllTabsToggle');
 const detachBtn = document.getElementById('detachBtn');
 const clearBtn = document.getElementById('clearBtn');
 const settingsBtn = document.getElementById('settingsBtn');
@@ -59,8 +58,8 @@ function loadSettings() {
     }
   });
 
-  // Load filter preferences and show-all-tabs setting
-  chrome.storage.local.get(['endpointFilter', 'configIdFilter', 'showAllTabs'], (result) => {
+  // Load filter preferences
+  chrome.storage.local.get(['endpointFilter', 'configIdFilter'], (result) => {
     if (result.endpointFilter) {
       filters.endpoint = result.endpointFilter;
       // Update three-state toggle
@@ -75,9 +74,6 @@ function loadSettings() {
     if (result.configIdFilter) {
       filters.configId = result.configIdFilter;
       configIdFilter.value = result.configIdFilter;
-    }
-    if (result.showAllTabs !== undefined && showAllTabsToggle) {
-      showAllTabsToggle.checked = result.showAllTabs;
     }
   });
 }
@@ -94,25 +90,13 @@ function loadTemplates() {
 
 /**
  * Load Floodlight data from background script
+ * Always shows data from all browser tabs
  */
 function loadFloodlightData() {
-  console.log('[Popup] Requesting Floodlight data...');
+  console.log('[Popup] Requesting Floodlight data from all tabs...');
 
-  // Check if "Show All Tabs" mode is enabled
-  const showAllTabs = showAllTabsToggle ? showAllTabsToggle.checked : false;
-
-  // First, log the current tab for debugging
-  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-    if (tabs[0]) {
-      console.log('[Popup] Current active tab ID:', tabs[0].id);
-      console.log('[Popup] Current active tab URL:', tabs[0].url);
-      console.log('[Popup] Show All Tabs mode:', showAllTabs);
-    }
-  });
-
-  // Request data - either from current tab or all tabs
-  const action = showAllTabs ? 'getAllFloodlightData' : 'getFloodlightData';
-  chrome.runtime.sendMessage({ action }, (response) => {
+  // Request data from all tabs
+  chrome.runtime.sendMessage({ action: 'getAllFloodlightData' }, (response) => {
     console.log('[Popup] Received response:', response);
     if (response && response.data && Array.isArray(response.data) && response.data.length > 0) {
       console.log('[Popup] Displaying data:', response.data);
@@ -502,18 +486,6 @@ function setupEventListeners() {
       if (persistToggle) {
         persistToggle.checked = enabled;
       }
-    });
-  }
-
-  // Show All Tabs toggle - shows data across all tabs
-  if (showAllTabsToggle) {
-    showAllTabsToggle.addEventListener('change', (e) => {
-      const enabled = e.target.checked;
-      chrome.storage.local.set({ showAllTabs: enabled });
-
-      // Force reload to show data from all tabs or just current tab
-      lastDataLength = -1;
-      loadFloodlightData();
     });
   }
 
