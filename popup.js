@@ -189,9 +189,8 @@ function displayAccordions(dataArray) {
     const accordionItem = createAccordionItem(data, index);
     accordionContainer.appendChild(accordionItem);
 
-    // Restore open state if this was the open accordion
-    // Or auto-open the first (newest) item if it's new
-    if (index === wasOpen || (wasOpen === null && index === 0 && dataArray.length > lastDataLength)) {
+    // Restore open state only if this was the previously open accordion
+    if (index === wasOpen) {
       accordionItem.classList.add('active');
       currentOpenIndex = index;
     }
