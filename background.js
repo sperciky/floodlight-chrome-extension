@@ -309,15 +309,22 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   }
 
   if (request.action === 'clearData') {
-    // Clear data for current tab
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      if (tabs[0]) {
-        const tabId = tabs[0].id;
-        delete capturedRequests[tabId];
+    // Clear data for all tabs
+    console.log('[Floodlight Debugger] Clearing all data from all tabs');
+
+    // Clear in-memory data
+    const tabIds = Object.keys(capturedRequests);
+    capturedRequests = {};
+
+    // Clear persisted data for all tabs
+    if (persistData) {
+      tabIds.forEach(tabId => {
         chrome.storage.local.remove(`floodlight_data_${tabId}`);
-        sendResponse({ success: true });
-      }
-    });
+      });
+    }
+
+    console.log('[Floodlight Debugger] All data cleared');
+    sendResponse({ success: true });
     return true;
   }
 
