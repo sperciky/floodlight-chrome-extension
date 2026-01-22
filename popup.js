@@ -100,12 +100,19 @@ function createAccordionItem(data, index) {
   // Create accordion header with title format: "activity_group (config_id)"
   const title = `${data.required.type || 'unknown'} (${data.required.src || 'unknown'})`;
 
+  // Determine endpoint badge text and class
+  const endpointBadge = data.endpointType === 'fls' ? 'FLS' :
+                        data.endpointType === 'ad' ? 'AD' :
+                        'UNKNOWN';
+  const endpointClass = data.endpointType || 'unknown';
+
   accordion.innerHTML = `
     <div class="accordion-header">
       <div class="accordion-title">
         <span class="accordion-position">#${index + 1}</span>
         <span class="accordion-name">${title}</span>
         <span class="accordion-badge ${data.activityType.toLowerCase()}">${data.activityType}</span>
+        <span class="accordion-badge endpoint-${endpointClass}">${endpointBadge}</span>
       </div>
       <div class="accordion-timestamp">${formatTimestamp(new Date(data.timestamp))}</div>
       <span class="accordion-arrow">▼</span>
