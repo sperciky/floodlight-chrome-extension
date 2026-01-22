@@ -86,7 +86,20 @@ campa0=campaign_data
 
 JSON:
 {&quot;b2bin0&quot;: &quot;B2B&quot;, &quot;campa0&quot;: &quot;campaign_data&quot;}"></textarea>
-          <small class="help-text">Map tag strings (cat parameter) to activity group names</small>
+          <small class="help-text">Map group tag strings (type parameter) to activity names</small>
+        </div>
+
+        <div class="form-group">
+          <label for="activities">Activities Mapping (JSON)</label>
+          <textarea id="activities" name="activities" rows="12" placeholder='{
+  &quot;activity_name&quot;: {
+    &quot;name&quot;: &quot;activity_name&quot;,
+    &quot;floodlight_id&quot;: &quot;11343186&quot;,
+    &quot;group_tag_string&quot;: &quot;hu_co00&quot;,
+    &quot;activity_tag_string&quot;: &quot;hu_co0&quot;
+  }
+}'></textarea>
+          <small class="help-text">Full activity definitions in JSON format - enables precise matching and enrichment</small>
         </div>
 
         <div class="form-actions">
