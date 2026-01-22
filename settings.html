@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Floodlight Debugger - Settings</title>
+  <link rel="stylesheet" href="settings.css">
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <h1>Account Templates</h1>
+      <button id="backBtn" class="btn-back">← Back to Debugger</button>
+    </header>
+
+    <!-- Template List View -->
+    <div id="listView" class="view">
+      <div class="view-header">
+        <h2>Manage Templates</h2>
+        <button id="addTemplateBtn" class="btn btn-primary">+ Add Template</button>
+      </div>
+
+      <div id="templateList" class="template-list">
+        <div class="empty-state">
+          <p>No templates configured yet.</p>
+          <p class="help-text">Create a template to enrich Floodlight data with custom parameter names and activity group mappings.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Template Form View -->
+    <div id="formView" class="view hidden">
+      <div class="view-header">
+        <h2 id="formTitle">Add Template</h2>
+        <button id="cancelBtn" class="btn btn-secondary">Cancel</button>
+      </div>
+
+      <form id="templateForm">
+        <div class="form-group">
+          <label for="configId">Floodlight Config ID <span class="required">*</span></label>
+          <input type="text" id="configId" name="configId" placeholder="e.g., 12455908" required>
+          <small class="help-text">This is the 'src' parameter value in your Floodlight requests</small>
+        </div>
+
+        <div class="form-group">
+          <label for="templateName">Template Name (Optional)</label>
+          <input type="text" id="templateName" name="templateName" placeholder="e.g., US Account, UK Account">
+          <small class="help-text">A friendly name to identify this template</small>
+        </div>
+
+        <div class="form-group">
+          <label for="customParams">Custom Parameters Mapping</label>
+          <textarea id="customParams" name="customParams" rows="8" placeholder="Supports TSV, Key-Value, or JSON formats:
+
+TSV (copy from Google Sheets):
+u1	ga_client_id
+u2	bigquery_client_id
+
+Key-Value:
+u1=ga_client_id
+u2=bigquery_client_id
+
+JSON:
+{&quot;u1&quot;: &quot;ga_client_id&quot;, &quot;u2&quot;: &quot;bigquery_client_id&quot;}"></textarea>
+          <small class="help-text">Map u1-u100 parameters to readable names</small>
+        </div>
+
+        <div class="form-group">
+          <label for="activityGroups">Activity Groups Mapping</label>
+          <textarea id="activityGroups" name="activityGroups" rows="8" placeholder="Supports TSV, Key-Value, or JSON formats:
+
+TSV (copy from Google Sheets):
+b2bin0	B2B
+campa0	campaign_data
+
+Key-Value:
+b2bin0=B2B
+campa0=campaign_data
+
+JSON:
+{&quot;b2bin0&quot;: &quot;B2B&quot;, &quot;campa0&quot;: &quot;campaign_data&quot;}"></textarea>
+          <small class="help-text">Map tag strings (cat parameter) to activity group names</small>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" id="deleteBtn" class="btn btn-danger hidden">Delete Template</button>
+          <div class="form-actions-right">
+            <button type="button" id="cancelBtn2" class="btn btn-secondary">Cancel</button>
+            <button type="submit" class="btn btn-primary">Save Template</button>
+          </div>
+        </div>
+      </form>
+
+      <div class="format-help">
+        <h3>Supported Formats</h3>
+        <div class="format-examples">
+          <div class="format-example">
+            <h4>TSV (Tab-Separated)</h4>
+            <pre>u1	ga_client_id
+u2	bigquery_client_id</pre>
+            <p>✓ Copy directly from Google Sheets</p>
+          </div>
+          <div class="format-example">
+            <h4>Key-Value</h4>
+            <pre>u1=ga_client_id
+u2=bigquery_client_id</pre>
+            <p>✓ Simple and readable</p>
+          </div>
+          <div class="format-example">
+            <h4>JSON</h4>
+            <pre>{"u1": "ga_client_id", "u2": "bigquery_client_id"}</pre>
+            <p>✓ Programmatic format</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="settings.js"></script>
+</body>
+</html>
