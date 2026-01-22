@@ -210,18 +210,32 @@ function createAccordionItem(data, index) {
   // Get template for this config ID
   const template = templates[data.required.src];
 
-  // Enrich activity tag name if template exists
-  // Use the 'cat' (Activity Tag) parameter, not 'type' (Activity Group)
-  let activityTagDisplay = data.required.cat || 'unknown';
-  if (template && template.activityGroups && data.required.cat) {
-    const mappedName = template.activityGroups[data.required.cat];
-    if (mappedName) {
-      activityTagDisplay = mappedName;
+  // Try to find matching activity in activities mapping
+  let activityName = null;
+  if (template && template.activities) {
+    // Find activity by matching floodlight_id, group_tag_string, and activity_tag_string
+    for (const [key, activity] of Object.entries(template.activities)) {
+      if (activity.floodlight_id === data.required.src &&
+          activity.group_tag_string === data.required.type &&
+          activity.activity_tag_string === data.required.cat) {
+        activityName = activity.name;
+        break;
+      }
     }
   }
 
-  // Create accordion header with title format: "activity_tag (config_id)"
-  const title = `${activityTagDisplay} (${data.required.src || 'unknown'})`;
+  // If no activity match, fall back to activityGroups mapping for cat parameter
+  let displayName = activityName;
+  if (!displayName && template && template.activityGroups && data.required.cat) {
+    displayName = template.activityGroups[data.required.cat];
+  }
+  // Final fallback to raw cat value
+  if (!displayName) {
+    displayName = data.required.cat || 'unknown';
+  }
+
+  // Create accordion header with title format: "activity_name (config_id)"
+  const title = `${displayName} (${data.required.src || 'unknown'})`;
 
   // Determine endpoint badge text and class
   const endpointBadge = data.endpointType === 'fls' ? 'FLS' :
@@ -261,12 +275,38 @@ function createAccordionBody(data) {
   // Get template for this config ID
   const template = templates[data.required.src];
 
-  // Enrich Activity Tag label if template exists
+  // Try to find matching activity in activities mapping
+  let activityName = null;
+  if (template && template.activities) {
+    for (const [key, activity] of Object.entries(template.activities)) {
+      if (activity.floodlight_id === data.required.src &&
+          activity.group_tag_string === data.required.type &&
+          activity.activity_tag_string === data.required.cat) {
+        activityName = activity.name;
+        break;
+      }
+    }
+  }
+
+  // Enrich Activity Group label
+  let activityGroupLabel = 'Activity Group';
+  if (activityName) {
+    activityGroupLabel = `Activity Group (${activityName})`;
+  } else if (template && template.activityGroups && data.required.type) {
+    const mappedName = template.activityGroups[data.required.type];
+    if (mappedName) {
+      activityGroupLabel = `Activity Group (${mappedName})`;
+    }
+  }
+
+  // Enrich Activity Tag label
   let activityTagLabel = 'Activity Tag';
-  if (template && template.activityGroups && data.required.cat) {
-    const activityName = template.activityGroups[data.required.cat];
-    if (activityName) {
-      activityTagLabel = `Activity Tag (${activityName})`;
+  if (activityName) {
+    activityTagLabel = `Activity Tag (${activityName})`;
+  } else if (template && template.activityGroups && data.required.cat) {
+    const mappedName = template.activityGroups[data.required.cat];
+    if (mappedName) {
+      activityTagLabel = `Activity Tag (${mappedName})`;
     }
   }
 
@@ -277,7 +317,7 @@ function createAccordionBody(data) {
       <table class="param-table">
         <tbody>
           ${createParamRow('Floodlight Config ID', data.required.src, true)}
-          ${createParamRow('Activity Group', data.required.type, true)}
+          ${createParamRow(activityGroupLabel, data.required.type, true)}
           ${createParamRow(activityTagLabel, data.required.cat, true)}
           ${createParamRow('Order/Random', data.required.ord, true)}
         </tbody>

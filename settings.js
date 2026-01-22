@@ -143,6 +143,7 @@ function showFormView(template = null) {
     document.getElementById('templateName').value = template.name || '';
     document.getElementById('customParams').value = formatAsKeyValue(template.customParams || {});
     document.getElementById('activityGroups').value = formatAsKeyValue(template.activityGroups || {});
+    document.getElementById('activities').value = template.activities ? JSON.stringify(template.activities, null, 2) : '';
     document.getElementById('deleteBtn').classList.remove('hidden');
   } else {
     // Add mode
@@ -186,6 +187,7 @@ function saveTemplate() {
   const templateName = document.getElementById('templateName').value.trim();
   const customParamsInput = document.getElementById('customParams').value.trim();
   const activityGroupsInput = document.getElementById('activityGroups').value.trim();
+  const activitiesInput = document.getElementById('activities').value.trim();
 
   if (!configId) {
     alert('Please enter a Floodlight Config ID');
@@ -196,10 +198,25 @@ function saveTemplate() {
     const customParams = parseMapping(customParamsInput);
     const activityGroups = parseMapping(activityGroupsInput);
 
+    // Parse activities JSON
+    let activities = {};
+    if (activitiesInput) {
+      try {
+        activities = JSON.parse(activitiesInput);
+        // Validate it's an object
+        if (typeof activities !== 'object' || activities === null || Array.isArray(activities)) {
+          throw new Error('Activities must be a JSON object');
+        }
+      } catch (e) {
+        throw new Error(`Invalid Activities JSON: ${e.message}`);
+      }
+    }
+
     templates[configId] = {
       name: templateName,
       customParams,
       activityGroups,
+      activities,
       updatedAt: new Date().toISOString()
     };
 
