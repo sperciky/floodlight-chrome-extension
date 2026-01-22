@@ -88,6 +88,15 @@ function loadTemplates() {
  */
 function loadFloodlightData() {
   console.log('[Popup] Requesting Floodlight data...');
+
+  // First, log the current tab for debugging
+  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+    if (tabs[0]) {
+      console.log('[Popup] Current active tab ID:', tabs[0].id);
+      console.log('[Popup] Current active tab URL:', tabs[0].url);
+    }
+  });
+
   chrome.runtime.sendMessage({ action: 'getFloodlightData' }, (response) => {
     console.log('[Popup] Received response:', response);
     if (response && response.data && Array.isArray(response.data) && response.data.length > 0) {
