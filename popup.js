@@ -210,17 +210,18 @@ function createAccordionItem(data, index) {
   // Get template for this config ID
   const template = templates[data.required.src];
 
-  // Enrich activity group name if template exists
-  let activityGroupDisplay = data.required.type || 'unknown';
-  if (template && template.activityGroups && data.required.type) {
-    const mappedName = template.activityGroups[data.required.type];
+  // Enrich activity tag name if template exists
+  // Use the 'cat' (Activity Tag) parameter, not 'type' (Activity Group)
+  let activityTagDisplay = data.required.cat || 'unknown';
+  if (template && template.activityGroups && data.required.cat) {
+    const mappedName = template.activityGroups[data.required.cat];
     if (mappedName) {
-      activityGroupDisplay = mappedName;
+      activityTagDisplay = mappedName;
     }
   }
 
-  // Create accordion header with title format: "activity_group (config_id)"
-  const title = `${activityGroupDisplay} (${data.required.src || 'unknown'})`;
+  // Create accordion header with title format: "activity_tag (config_id)"
+  const title = `${activityTagDisplay} (${data.required.src || 'unknown'})`;
 
   // Determine endpoint badge text and class
   const endpointBadge = data.endpointType === 'fls' ? 'FLS' :
