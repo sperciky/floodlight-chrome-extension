@@ -73,6 +73,11 @@ body {
   color: #1a202c;
 }
 
+.view-header-actions {
+  display: flex;
+  gap: 12px;
+}
+
 /* Buttons */
 .btn {
   padding: 10px 20px;
