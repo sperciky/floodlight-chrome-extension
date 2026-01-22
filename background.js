@@ -283,6 +283,31 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     return true; // Will respond asynchronously
   }
 
+  if (request.action === 'getAllFloodlightData') {
+    console.log('[Floodlight Debugger] getAllFloodlightData request received');
+    console.log('[Floodlight Debugger] All captured requests by tab:', capturedRequests);
+
+    // Aggregate data from all tabs
+    let allData = [];
+    Object.keys(capturedRequests).forEach(tabId => {
+      if (capturedRequests[tabId] && Array.isArray(capturedRequests[tabId])) {
+        allData = allData.concat(capturedRequests[tabId]);
+      }
+    });
+
+    // Sort by timestamp (most recent first)
+    allData.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+    // Limit to 100 requests total
+    if (allData.length > 100) {
+      allData = allData.slice(0, 100);
+    }
+
+    console.log('[Floodlight Debugger] Returning aggregated data from all tabs:', allData.length, 'requests');
+    sendResponse({ data: allData.length > 0 ? allData : null });
+    return true;
+  }
+
   if (request.action === 'clearData') {
     // Clear data for current tab
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {

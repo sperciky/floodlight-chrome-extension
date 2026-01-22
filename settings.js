@@ -18,6 +18,18 @@ function attachEventListeners() {
     showFormView();
   });
 
+  document.getElementById('exportBtn').addEventListener('click', () => {
+    exportTemplates();
+  });
+
+  document.getElementById('importBtn').addEventListener('click', () => {
+    document.getElementById('importFile').click();
+  });
+
+  document.getElementById('importFile').addEventListener('change', (e) => {
+    importTemplates(e.target.files[0]);
+  });
+
   document.getElementById('cancelBtn').addEventListener('click', () => {
     showListView();
   });
@@ -264,4 +276,97 @@ function formatAsKeyValue(obj) {
   return Object.entries(obj)
     .map(([key, value]) => `${key}=${value}`)
     .join('\n');
+}
+
+// Export templates as JSON file
+function exportTemplates() {
+  if (Object.keys(templates).length === 0) {
+    alert('No templates to export. Please create templates first.');
+    return;
+  }
+
+  const dataStr = JSON.stringify(templates, null, 2);
+  const dataBlob = new Blob([dataStr], { type: 'application/json' });
+
+  // Generate filename with timestamp
+  const timestamp = new Date().toISOString().replace(/[:.]/g, '-').split('T')[0];
+  const filename = `floodlight-templates-${timestamp}.json`;
+
+  // Create download link
+  const downloadLink = document.createElement('a');
+  downloadLink.href = URL.createObjectURL(dataBlob);
+  downloadLink.download = filename;
+  downloadLink.click();
+
+  // Clean up
+  URL.revokeObjectURL(downloadLink.href);
+
+  console.log('Templates exported:', templates);
+}
+
+// Import templates from JSON file
+function importTemplates(file) {
+  if (!file) return;
+
+  if (!file.name.endsWith('.json')) {
+    alert('Please select a valid JSON file');
+    return;
+  }
+
+  const reader = new FileReader();
+
+  reader.onload = (e) => {
+    try {
+      const importedTemplates = JSON.parse(e.target.result);
+
+      // Validate the structure
+      if (typeof importedTemplates !== 'object' || importedTemplates === null) {
+        throw new Error('Invalid template format');
+      }
+
+      // Count how many templates will be imported/overwritten
+      const existingCount = Object.keys(templates).filter(id => importedTemplates[id]).length;
+      const newCount = Object.keys(importedTemplates).length - existingCount;
+
+      let message = `Import ${Object.keys(importedTemplates).length} template(s)?`;
+      if (existingCount > 0) {
+        message += `\n\n⚠️ This will overwrite ${existingCount} existing template(s).`;
+      }
+      if (newCount > 0) {
+        message += `\n${newCount} new template(s) will be added.`;
+      }
+
+      if (!confirm(message)) {
+        // Reset file input
+        document.getElementById('importFile').value = '';
+        return;
+      }
+
+      // Merge imported templates with existing ones
+      templates = { ...templates, ...importedTemplates };
+
+      // Save to storage
+      saveTemplatesToStorage();
+
+      // Refresh display
+      renderTemplateList();
+
+      alert(`Successfully imported ${Object.keys(importedTemplates).length} template(s)!`);
+
+      console.log('Templates imported:', importedTemplates);
+    } catch (error) {
+      alert(`Error importing templates: ${error.message}`);
+      console.error('Import error:', error);
+    }
+
+    // Reset file input
+    document.getElementById('importFile').value = '';
+  };
+
+  reader.onerror = () => {
+    alert('Error reading file');
+    document.getElementById('importFile').value = '';
+  };
+
+  reader.readAsText(file);
 }

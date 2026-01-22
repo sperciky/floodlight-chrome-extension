@@ -17,8 +17,15 @@
     <div id="listView" class="view">
       <div class="view-header">
         <h2>Manage Templates</h2>
-        <button id="addTemplateBtn" class="btn btn-primary">+ Add Template</button>
+        <div class="view-header-actions">
+          <button id="exportBtn" class="btn btn-secondary">↓ Export Templates</button>
+          <button id="importBtn" class="btn btn-secondary">↑ Import Templates</button>
+          <button id="addTemplateBtn" class="btn btn-primary">+ Add Template</button>
+        </div>
       </div>
+
+      <!-- Hidden file input for import -->
+      <input type="file" id="importFile" accept=".json" style="display: none;">
 
       <div id="templateList" class="template-list">
         <div class="empty-state">

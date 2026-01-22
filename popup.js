@@ -6,6 +6,7 @@ const settingsScreen = document.getElementById('settingsScreen');
 const trackingToggle = document.getElementById('trackingToggle');
 const trackingStatus = document.getElementById('trackingStatus');
 const persistToggle = document.getElementById('persistToggle');
+const keepOpenToggle = document.getElementById('keepOpenToggle');
 const clearBtn = document.getElementById('clearBtn');
 const settingsBtn = document.getElementById('settingsBtn');
 const backBtn = document.getElementById('backBtn');
@@ -53,8 +54,8 @@ function loadSettings() {
     }
   });
 
-  // Load filter preferences
-  chrome.storage.local.get(['endpointFilter', 'configIdFilter'], (result) => {
+  // Load filter preferences and keep-open setting
+  chrome.storage.local.get(['endpointFilter', 'configIdFilter', 'keepOpen'], (result) => {
     if (result.endpointFilter) {
       filters.endpoint = result.endpointFilter;
       // Update three-state toggle
@@ -69,6 +70,9 @@ function loadSettings() {
     if (result.configIdFilter) {
       filters.configId = result.configIdFilter;
       configIdFilter.value = result.configIdFilter;
+    }
+    if (result.keepOpen !== undefined) {
+      keepOpenToggle.checked = result.keepOpen;
     }
   });
 }
@@ -89,15 +93,21 @@ function loadTemplates() {
 function loadFloodlightData() {
   console.log('[Popup] Requesting Floodlight data...');
 
+  // Check if "Keep Open" mode is enabled
+  const keepOpen = keepOpenToggle.checked;
+
   // First, log the current tab for debugging
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
     if (tabs[0]) {
       console.log('[Popup] Current active tab ID:', tabs[0].id);
       console.log('[Popup] Current active tab URL:', tabs[0].url);
+      console.log('[Popup] Keep Open mode:', keepOpen);
     }
   });
 
-  chrome.runtime.sendMessage({ action: 'getFloodlightData' }, (response) => {
+  // Request data - either from current tab or all tabs
+  const action = keepOpen ? 'getAllFloodlightData' : 'getFloodlightData';
+  chrome.runtime.sendMessage({ action }, (response) => {
     console.log('[Popup] Received response:', response);
     if (response && response.data && Array.isArray(response.data) && response.data.length > 0) {
       console.log('[Popup] Displaying data:', response.data);
@@ -464,6 +474,16 @@ function setupEventListeners() {
       action: 'updateSettings',
       persistData: enabled
     });
+  });
+
+  // Keep Open toggle - shows data across all tabs
+  keepOpenToggle.addEventListener('change', (e) => {
+    const enabled = e.target.checked;
+    chrome.storage.local.set({ keepOpen: enabled });
+
+    // Force reload to show data from all tabs or just current tab
+    lastDataLength = -1;
+    loadFloodlightData();
   });
 
   // Endpoint toggle (three-state)
