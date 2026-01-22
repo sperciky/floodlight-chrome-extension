@@ -18,6 +18,25 @@
         </label>
         <span id="trackingStatus" class="status-text enabled">Tracking Enabled</span>
       </div>
+
+      <!-- Filters Section -->
+      <div class="filters-container">
+        <div class="filter-group">
+          <label class="filter-label">Endpoint:</label>
+          <select id="endpointFilter" class="filter-select">
+            <option value="both">Both</option>
+            <option value="fls">FLS Only</option>
+            <option value="ad">AD Only</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label class="filter-label">Config ID:</label>
+          <select id="configIdFilter" class="filter-select">
+            <option value="all">All IDs</option>
+          </select>
+        </div>
+      </div>
     </div>
 
     <div class="content">

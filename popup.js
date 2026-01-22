@@ -11,10 +11,21 @@ const settingsBtn = document.getElementById('settingsBtn');
 const backBtn = document.getElementById('backBtn');
 const noDataState = document.getElementById('noDataState');
 const accordionContainer = document.getElementById('accordionContainer');
+const endpointFilter = document.getElementById('endpointFilter');
+const configIdFilter = document.getElementById('configIdFilter');
 
 // Track which accordion is currently open
 let currentOpenIndex = null;
 let lastDataLength = 0;
+
+// Store all data (unfiltered)
+let allFloodlightData = [];
+
+// Current filter settings
+let filters = {
+  endpoint: 'both',
+  configId: 'all'
+};
 
 /**
  * Initialize the popup
@@ -37,6 +48,18 @@ function loadSettings() {
       persistToggle.checked = response.persistData;
     }
   });
+
+  // Load filter preferences
+  chrome.storage.local.get(['endpointFilter', 'configIdFilter'], (result) => {
+    if (result.endpointFilter) {
+      filters.endpoint = result.endpointFilter;
+      endpointFilter.value = result.endpointFilter;
+    }
+    if (result.configIdFilter) {
+      filters.configId = result.configIdFilter;
+      configIdFilter.value = result.configIdFilter;
+    }
+  });
 }
 
 /**
@@ -48,11 +71,70 @@ function loadFloodlightData() {
     console.log('[Popup] Received response:', response);
     if (response && response.data && Array.isArray(response.data) && response.data.length > 0) {
       console.log('[Popup] Displaying data:', response.data);
-      displayAccordions(response.data);
+
+      // Store all data
+      allFloodlightData = response.data;
+
+      // Update config ID dropdown
+      updateConfigIdDropdown(response.data);
+
+      // Apply filters and display
+      const filteredData = applyFilters(response.data);
+      displayAccordions(filteredData);
     } else {
       console.log('[Popup] No data, showing empty state');
+      allFloodlightData = [];
       showNoDataState();
     }
+  });
+}
+
+/**
+ * Apply filters to data array
+ */
+function applyFilters(dataArray) {
+  let filtered = dataArray;
+
+  // Filter by endpoint type
+  if (filters.endpoint !== 'both') {
+    filtered = filtered.filter(data => data.endpointType === filters.endpoint);
+  }
+
+  // Filter by config ID
+  if (filters.configId !== 'all') {
+    filtered = filtered.filter(data => data.required.src === filters.configId);
+  }
+
+  return filtered;
+}
+
+/**
+ * Update config ID dropdown with unique IDs from data
+ */
+function updateConfigIdDropdown(dataArray) {
+  // Extract unique config IDs
+  const configIds = new Set();
+  dataArray.forEach(data => {
+    if (data.required.src) {
+      configIds.add(data.required.src);
+    }
+  });
+
+  // Get current selection
+  const currentSelection = configIdFilter.value;
+
+  // Rebuild dropdown
+  configIdFilter.innerHTML = '<option value="all">All IDs</option>';
+
+  // Sort IDs and add to dropdown
+  Array.from(configIds).sort().forEach(id => {
+    const option = document.createElement('option');
+    option.value = id;
+    option.textContent = id;
+    if (id === currentSelection) {
+      option.selected = true;
+    }
+    configIdFilter.appendChild(option);
   });
 }
 
@@ -325,9 +407,32 @@ function setupEventListeners() {
     });
   });
 
+  // Endpoint filter
+  endpointFilter.addEventListener('change', (e) => {
+    filters.endpoint = e.target.value;
+    chrome.storage.local.set({ endpointFilter: e.target.value });
+
+    // Reapply filters and update display
+    const filteredData = applyFilters(allFloodlightData);
+    lastDataLength = -1; // Force rebuild
+    displayAccordions(filteredData);
+  });
+
+  // Config ID filter
+  configIdFilter.addEventListener('change', (e) => {
+    filters.configId = e.target.value;
+    chrome.storage.local.set({ configIdFilter: e.target.value });
+
+    // Reapply filters and update display
+    const filteredData = applyFilters(allFloodlightData);
+    lastDataLength = -1; // Force rebuild
+    displayAccordions(filteredData);
+  });
+
   // Clear data button
   clearBtn.addEventListener('click', () => {
     chrome.runtime.sendMessage({ action: 'clearData' }, () => {
+      allFloodlightData = [];
       showNoDataState();
     });
   });
