@@ -408,8 +408,16 @@ input:checked + .slider-small:before {
   border: 1px solid #e0e0e0;
 }
 
-/* Warning Badge for Missing Parameters */
-.accordion-badge.warning {
+/* Badge for Parameters Missing from Payload */
+.accordion-badge.params-missing {
+  background: #ffebee;
+  color: #c62828;
+  border: 1px solid #ef5350;
+  font-weight: 700;
+}
+
+/* Badge for Undefined/Null Parameter Values */
+.accordion-badge.params-undefined {
   background: #fff3e0;
   color: #e65100;
   border: 1px solid #ffb74d;
@@ -667,6 +675,16 @@ input:checked + .slider-small:before {
   border-left: 3px solid #ff9800;
 }
 
+.row-missing {
+  background: #ffebee;
+  border-left: 3px solid #e53935;
+}
+
+.row-undefined {
+  background: #fff3e0;
+  border-left: 3px solid #fb8c00;
+}
+
 /* Missing/Optional Indicators */
 .missing {
   font-style: italic;
@@ -686,6 +704,26 @@ input:checked + .slider-small:before {
 }
 
 .missing.expected {
+  color: #e65100;
+  background: #ffe0b2;
+  font-weight: 600;
+}
+
+.missing-param {
+  font-style: italic;
+  font-size: 12px;
+  padding: 2px 8px;
+  border-radius: 3px;
+  color: #c62828;
+  background: #ffcdd2;
+  font-weight: 600;
+}
+
+.undefined-param {
+  font-style: italic;
+  font-size: 12px;
+  padding: 2px 8px;
+  border-radius: 3px;
   color: #e65100;
   background: #ffe0b2;
   font-weight: 600;
