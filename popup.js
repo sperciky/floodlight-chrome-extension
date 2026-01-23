@@ -226,12 +226,25 @@ function createAccordionItem(data, index) {
     }
   }
 
-  // Check if expected parameters are missing
+  // Check if expected parameters are missing or undefined
   let hasMissingParams = false;
+  let hasUndefinedParams = false;
   if (matchedActivity && matchedActivity.custom_parameters && Array.isArray(matchedActivity.custom_parameters)) {
-    hasMissingParams = matchedActivity.custom_parameters.some(param => {
-      const value = data.custom[param] || data.sales[param];
-      return !value || value === 'undefined' || value === 'null';
+    matchedActivity.custom_parameters.forEach(param => {
+      const customValue = data.custom[param];
+      const salesValue = data.sales[param];
+      const allParams = { ...data.custom, ...data.sales };
+
+      // Check if parameter exists in the payload at all
+      if (!(param in allParams)) {
+        hasMissingParams = true;
+      }
+      // Check if parameter exists but has undefined/null value
+      else if (!customValue && !salesValue ||
+               customValue === 'undefined' || customValue === 'null' ||
+               salesValue === 'undefined' || salesValue === 'null') {
+        hasUndefinedParams = true;
+      }
     });
   }
 
@@ -254,8 +267,9 @@ function createAccordionItem(data, index) {
                         'UNKNOWN';
   const endpointClass = data.endpointType || 'unknown';
 
-  // Warning badge if missing expected parameters
-  const warningBadge = hasMissingParams ? '<span class="accordion-badge warning">⚠ Missing Params</span>' : '';
+  // Warning badges for missing and undefined parameters
+  const missingBadge = hasMissingParams ? '<span class="accordion-badge params-missing">⊘ Params Missing</span>' : '';
+  const undefinedBadge = hasUndefinedParams ? '<span class="accordion-badge params-undefined">⚠ Undefined Value</span>' : '';
 
   accordion.innerHTML = `
     <div class="accordion-header">
@@ -264,7 +278,8 @@ function createAccordionItem(data, index) {
         <span class="accordion-name">${title}</span>
         <span class="accordion-badge ${data.activityType.toLowerCase()}">${data.activityType}</span>
         <span class="accordion-badge endpoint-${endpointClass}">${endpointBadge}</span>
-        ${warningBadge}
+        ${missingBadge}
+        ${undefinedBadge}
       </div>
       <div class="accordion-timestamp">${formatTimestamp(new Date(data.timestamp))}</div>
       <span class="accordion-arrow">▼</span>
@@ -342,8 +357,10 @@ function createAccordionBody(data, matchedActivity = null) {
 
     expectedParams.forEach(param => {
       // Check custom parameters first, then sales parameters
-      let value = data.custom[param] || data.sales[param];
-      let isMissing = !value || value === 'undefined' || value === 'null';
+      const customValue = data.custom[param];
+      const salesValue = data.sales[param];
+      const value = customValue || salesValue;
+      const allParams = { ...data.custom, ...data.sales };
 
       // Get friendly name from template if available
       let paramLabel = param;
@@ -351,14 +368,26 @@ function createAccordionBody(data, matchedActivity = null) {
         paramLabel = `${param} (${template.customParams[param]})`;
       }
 
-      if (isMissing) {
+      // Check if parameter is missing from payload entirely
+      if (!(param in allParams)) {
         html += `
-          <tr class="row-warning">
+          <tr class="row-missing">
             <td class="param-name">${escapeHtml(paramLabel)}</td>
-            <td class="param-value"><span class="missing expected">⚠ Missing/Undefined</span></td>
+            <td class="param-value"><span class="missing-param">⊘ Not in Payload</span></td>
           </tr>
         `;
-      } else {
+      }
+      // Check if parameter exists but has undefined/null value
+      else if (!value || value === 'undefined' || value === 'null') {
+        html += `
+          <tr class="row-undefined">
+            <td class="param-name">${escapeHtml(paramLabel)}</td>
+            <td class="param-value"><span class="undefined-param">⚠ Undefined/Null</span></td>
+          </tr>
+        `;
+      }
+      // Parameter exists and has a valid value
+      else {
         html += `
           <tr class="row-valid">
             <td class="param-name">${escapeHtml(paramLabel)}</td>
