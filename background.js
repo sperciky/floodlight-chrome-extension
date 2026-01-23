@@ -10,14 +10,28 @@ let trackingEnabled = true;
 // Persistence setting (off by default)
 let persistData = false;
 
-// Initialize settings from storage
-chrome.storage.local.get(['trackingEnabled', 'persistData'], (result) => {
+// Initialize settings and restore captured data from storage
+chrome.storage.local.get(null, (result) => {
+  // Load settings
   if (result.trackingEnabled !== undefined) {
     trackingEnabled = result.trackingEnabled;
   }
   if (result.persistData !== undefined) {
     persistData = result.persistData;
   }
+
+  // Restore captured requests from storage (service worker may have restarted)
+  Object.keys(result).forEach(key => {
+    if (key.startsWith('floodlight_data_')) {
+      const tabId = parseInt(key.replace('floodlight_data_', ''));
+      if (!isNaN(tabId) && Array.isArray(result[key])) {
+        capturedRequests[tabId] = result[key];
+        console.log(`[Floodlight Debugger] Restored ${result[key].length} requests for tab ${tabId} from storage`);
+      }
+    }
+  });
+
+  console.log('[Floodlight Debugger] Initialization complete. Captured requests restored:', Object.keys(capturedRequests).length, 'tabs');
 });
 
 // Listen for storage changes to update settings in real-time
@@ -176,13 +190,11 @@ chrome.webRequest.onCompleted.addListener(
 
     console.log('[Floodlight Debugger] Stored in memory for tab', details.tabId, `(Total: ${capturedRequests[details.tabId].length})`);
 
-    // If persistence is enabled, also save to chrome.storage.local
-    if (persistData) {
-      chrome.storage.local.set({
-        [`floodlight_data_${details.tabId}`]: capturedRequests[details.tabId]
-      });
-      console.log('[Floodlight Debugger] Saved to storage');
-    }
+    // Always persist to storage (to survive service worker restarts in Manifest V3)
+    chrome.storage.local.set({
+      [`floodlight_data_${details.tabId}`]: capturedRequests[details.tabId]
+    });
+    console.log('[Floodlight Debugger] Saved to storage');
 
     console.log('[Floodlight Debugger] Request captured successfully');
   },
@@ -258,22 +270,25 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         }
 
         // First check in-memory storage
-        if (capturedRequests[tabId]) {
+        if (capturedRequests[tabId] && capturedRequests[tabId].length > 0) {
           console.log('[Floodlight Debugger] Returning data from memory:', capturedRequests[tabId]);
           sendResponse({ data: capturedRequests[tabId] });
-        } else if (persistData) {
-          // If persistence is enabled, check chrome.storage
+        } else {
+          // If not in memory, check chrome.storage (may have survived service worker restart)
           console.log('[Floodlight Debugger] No memory data, checking storage...');
           chrome.storage.local.get([`floodlight_data_${tabId}`], (result) => {
             const data = result[`floodlight_data_${tabId}`] || null;
             console.log('[Floodlight Debugger] Storage data:', data);
+
+            // Restore to memory if found in storage
+            if (data && Array.isArray(data) && data.length > 0) {
+              capturedRequests[tabId] = data;
+              console.log('[Floodlight Debugger] Restored data to memory from storage');
+            }
+
             sendResponse({ data: data });
           });
           return true; // Will respond asynchronously
-        } else {
-          console.log('[Floodlight Debugger] No data found for tab', tabId);
-          console.log('[Floodlight Debugger] Available tabs with data:', Object.keys(capturedRequests));
-          sendResponse({ data: null });
         }
       } else {
         console.log('[Floodlight Debugger] No active tab found');
@@ -287,24 +302,38 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     console.log('[Floodlight Debugger] getAllFloodlightData request received');
     console.log('[Floodlight Debugger] All captured requests by tab:', capturedRequests);
 
-    // Aggregate data from all tabs
-    let allData = [];
-    Object.keys(capturedRequests).forEach(tabId => {
-      if (capturedRequests[tabId] && Array.isArray(capturedRequests[tabId])) {
-        allData = allData.concat(capturedRequests[tabId]);
+    // First, check if we need to restore any data from storage
+    chrome.storage.local.get(null, (result) => {
+      // Restore any data from storage that's not in memory
+      Object.keys(result).forEach(key => {
+        if (key.startsWith('floodlight_data_')) {
+          const tabId = key.replace('floodlight_data_', '');
+          if (!capturedRequests[tabId] && Array.isArray(result[key])) {
+            capturedRequests[tabId] = result[key];
+            console.log(`[Floodlight Debugger] Restored ${result[key].length} requests for tab ${tabId} from storage`);
+          }
+        }
+      });
+
+      // Aggregate data from all tabs
+      let allData = [];
+      Object.keys(capturedRequests).forEach(tabId => {
+        if (capturedRequests[tabId] && Array.isArray(capturedRequests[tabId])) {
+          allData = allData.concat(capturedRequests[tabId]);
+        }
+      });
+
+      // Sort by timestamp (most recent first)
+      allData.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+      // Limit to 100 requests total
+      if (allData.length > 100) {
+        allData = allData.slice(0, 100);
       }
+
+      console.log('[Floodlight Debugger] Returning aggregated data from all tabs:', allData.length, 'requests');
+      sendResponse({ data: allData.length > 0 ? allData : null });
     });
-
-    // Sort by timestamp (most recent first)
-    allData.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-
-    // Limit to 100 requests total
-    if (allData.length > 100) {
-      allData = allData.slice(0, 100);
-    }
-
-    console.log('[Floodlight Debugger] Returning aggregated data from all tabs:', allData.length, 'requests');
-    sendResponse({ data: allData.length > 0 ? allData : null });
     return true;
   }
 
