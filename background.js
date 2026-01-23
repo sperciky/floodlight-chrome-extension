@@ -119,35 +119,21 @@ function parseFloodlightUrl(url) {
  */
 console.log('[Floodlight Debugger] Setting up webRequest listeners...');
 
-// Test listener for ALL requests to see if webRequest is working at all
+// Main listener for Floodlight requests - using onBeforeRequest to capture before blocking
 chrome.webRequest.onBeforeRequest.addListener(
   (details) => {
-    if (details.url.includes('doubleclick')) {
-      console.log('[Floodlight Debugger] onBeforeRequest - Doubleclick request detected!', details.url);
-    }
-  },
-  { urls: ["<all_urls>"] }
-);
-
-// Main listener for completed Floodlight requests
-chrome.webRequest.onCompleted.addListener(
-  (details) => {
-    console.log('[Floodlight Debugger] onCompleted FIRED for:', details.url.substring(0, 100));
-
     // Filter for Floodlight/doubleclick URLs only
     if (!details.url.includes('doubleclick.net')) {
-      console.log('[Floodlight Debugger] onCompleted - Not a doubleclick URL, skipping');
       return;
     }
 
-    // Filter for activity endpoints only (not favicon, etc)
+    // Filter for activity endpoints only (not favicon, ads, etc)
     // Note: Floodlight uses both /activity and /activityi
     if (!details.url.includes('/activity') && !details.url.includes('/activityi')) {
-      console.log('[Floodlight Debugger] onCompleted - Not an activity URL, skipping');
       return;
     }
 
-    console.log('[Floodlight Debugger] onCompleted - Request intercepted!', details.url);
+    console.log('[Floodlight Debugger] Floodlight request intercepted!', details.url);
     console.log('[Floodlight Debugger] Tracking enabled:', trackingEnabled);
     console.log('[Floodlight Debugger] Tab ID:', details.tabId);
 
@@ -189,22 +175,11 @@ chrome.webRequest.onCompleted.addListener(
   { urls: ["<all_urls>"] }
 );
 
-// Error listener to catch failed/cancelled requests
-chrome.webRequest.onErrorOccurred.addListener(
+// Keep onCompleted for debugging purposes only
+chrome.webRequest.onCompleted.addListener(
   (details) => {
-    if (details.url.includes('doubleclick')) {
-      console.log('[Floodlight Debugger] onErrorOccurred - Request failed/cancelled!', details.url);
-      console.log('[Floodlight Debugger] Error details:', details.error);
-    }
-  },
-  { urls: ["<all_urls>"] }
-);
-
-// Additional test listener with onResponseStarted
-chrome.webRequest.onResponseStarted.addListener(
-  (details) => {
-    if (details.url.includes('doubleclick')) {
-      console.log('[Floodlight Debugger] onResponseStarted - Doubleclick response!', details.url);
+    if (details.url.includes('doubleclick.net') && (details.url.includes('/activity') || details.url.includes('/activityi'))) {
+      console.log('[Floodlight Debugger] onCompleted - Request completed successfully:', details.url.substring(0, 100));
     }
   },
   { urls: ["<all_urls>"] }
