@@ -378,16 +378,25 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     const tabIds = Object.keys(capturedRequests);
     capturedRequests = {};
 
-    // Clear persisted data for all tabs
-    if (persistData) {
-      tabIds.forEach(tabId => {
-        chrome.storage.local.remove(`floodlight_data_${tabId}`);
-      });
-    }
+    // Always clear persisted data from storage (since we always persist now)
+    // First, get all storage keys to find all floodlight_data_* entries
+    chrome.storage.local.get(null, (result) => {
+      const keysToRemove = Object.keys(result).filter(key => key.startsWith('floodlight_data_'));
 
-    console.log('[Floodlight Debugger] All data cleared');
-    sendResponse({ success: true });
-    return true;
+      if (keysToRemove.length > 0) {
+        console.log('[Floodlight Debugger] Removing storage keys:', keysToRemove);
+        chrome.storage.local.remove(keysToRemove, () => {
+          console.log('[Floodlight Debugger] All data cleared from storage');
+          sendResponse({ success: true });
+        });
+      } else {
+        console.log('[Floodlight Debugger] No storage data to clear');
+        sendResponse({ success: true });
+      }
+    });
+
+    console.log('[Floodlight Debugger] Memory cleared');
+    return true; // Will respond asynchronously
   }
 
   if (request.action === 'getSettings') {
