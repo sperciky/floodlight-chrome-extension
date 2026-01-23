@@ -212,6 +212,7 @@ function createAccordionItem(data, index) {
 
   // Try to find matching activity in activities mapping
   let activityName = null;
+  let matchedActivity = null;
   if (template && template.activities) {
     // Find activity by matching floodlight_id, group_tag_string, and activity_tag_string
     for (const [key, activity] of Object.entries(template.activities)) {
@@ -219,9 +220,19 @@ function createAccordionItem(data, index) {
           activity.group_tag_string === data.required.type &&
           activity.activity_tag_string === data.required.cat) {
         activityName = activity.name;
+        matchedActivity = activity;
         break;
       }
     }
+  }
+
+  // Check if expected parameters are missing
+  let hasMissingParams = false;
+  if (matchedActivity && matchedActivity.custom_parameters && Array.isArray(matchedActivity.custom_parameters)) {
+    hasMissingParams = matchedActivity.custom_parameters.some(param => {
+      const value = data.custom[param] || data.sales[param];
+      return !value || value === 'undefined' || value === 'null';
+    });
   }
 
   // If no activity match, fall back to activityGroups mapping for cat parameter
@@ -243,6 +254,9 @@ function createAccordionItem(data, index) {
                         'UNKNOWN';
   const endpointClass = data.endpointType || 'unknown';
 
+  // Warning badge if missing expected parameters
+  const warningBadge = hasMissingParams ? '<span class="accordion-badge warning">⚠ Missing Params</span>' : '';
+
   accordion.innerHTML = `
     <div class="accordion-header">
       <div class="accordion-title">
@@ -250,12 +264,13 @@ function createAccordionItem(data, index) {
         <span class="accordion-name">${title}</span>
         <span class="accordion-badge ${data.activityType.toLowerCase()}">${data.activityType}</span>
         <span class="accordion-badge endpoint-${endpointClass}">${endpointBadge}</span>
+        ${warningBadge}
       </div>
       <div class="accordion-timestamp">${formatTimestamp(new Date(data.timestamp))}</div>
       <span class="accordion-arrow">▼</span>
     </div>
     <div class="accordion-body">
-      ${createAccordionBody(data)}
+      ${createAccordionBody(data, matchedActivity)}
     </div>
   `;
 
@@ -269,24 +284,14 @@ function createAccordionItem(data, index) {
 /**
  * Create the body content for an accordion
  */
-function createAccordionBody(data) {
+function createAccordionBody(data, matchedActivity = null) {
   let html = '';
 
   // Get template for this config ID
   const template = templates[data.required.src];
 
-  // Try to find matching activity in activities mapping
-  let activityName = null;
-  if (template && template.activities) {
-    for (const [key, activity] of Object.entries(template.activities)) {
-      if (activity.floodlight_id === data.required.src &&
-          activity.group_tag_string === data.required.type &&
-          activity.activity_tag_string === data.required.cat) {
-        activityName = activity.name;
-        break;
-      }
-    }
-  }
+  // Get activity name from matched activity
+  let activityName = matchedActivity ? matchedActivity.name : null;
 
   // Enrich Activity Group label
   let activityGroupLabel = 'Activity Group';
@@ -324,6 +329,51 @@ function createAccordionBody(data) {
       </table>
     </div>
   `;
+
+  // Expected Parameters Section (if activity has custom_parameters defined)
+  if (matchedActivity && matchedActivity.custom_parameters && Array.isArray(matchedActivity.custom_parameters)) {
+    const expectedParams = matchedActivity.custom_parameters;
+    html += `
+      <div class="param-section">
+        <h4>Expected Parameters (${expectedParams.length})</h4>
+        <table class="param-table">
+          <tbody>
+    `;
+
+    expectedParams.forEach(param => {
+      // Check custom parameters first, then sales parameters
+      let value = data.custom[param] || data.sales[param];
+      let isMissing = !value || value === 'undefined' || value === 'null';
+
+      // Get friendly name from template if available
+      let paramLabel = param;
+      if (template && template.customParams && template.customParams[param]) {
+        paramLabel = `${param} (${template.customParams[param]})`;
+      }
+
+      if (isMissing) {
+        html += `
+          <tr class="row-warning">
+            <td class="param-name">${escapeHtml(paramLabel)}</td>
+            <td class="param-value"><span class="missing expected">⚠ Missing/Undefined</span></td>
+          </tr>
+        `;
+      } else {
+        html += `
+          <tr class="row-valid">
+            <td class="param-name">${escapeHtml(paramLabel)}</td>
+            <td class="param-value"><span>${escapeHtml(String(value))}</span></td>
+          </tr>
+        `;
+      }
+    });
+
+    html += `
+          </tbody>
+        </table>
+      </div>
+    `;
+  }
 
   // Sales Parameters Section
   const hasSalesParams = data.sales.qty || data.sales.cost;

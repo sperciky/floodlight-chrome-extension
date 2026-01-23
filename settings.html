@@ -91,15 +91,23 @@ JSON:
 
         <div class="form-group">
           <label for="activities">Activities Mapping (JSON)</label>
-          <textarea id="activities" name="activities" rows="12" placeholder='{
-  &quot;activity_name&quot;: {
-    &quot;name&quot;: &quot;activity_name&quot;,
-    &quot;floodlight_id&quot;: &quot;11343186&quot;,
-    &quot;group_tag_string&quot;: &quot;hu_co00&quot;,
-    &quot;activity_tag_string&quot;: &quot;hu_co0&quot;
+          <textarea id="activities" name="activities" rows="14" placeholder='{
+  &quot;sk_engage_view&quot;: {
+    &quot;name&quot;: &quot;sk_engage_view&quot;,
+    &quot;floodlight_id&quot;: &quot;10093926&quot;,
+    &quot;group_tag_string&quot;: &quot;sk_en00&quot;,
+    &quot;activity_tag_string&quot;: &quot;sk_en0&quot;,
+    &quot;custom_parameters&quot;: [&quot;u38&quot;, &quot;u39&quot;, &quot;u40&quot;]
+  },
+  &quot;sk_conversion_revenue&quot;: {
+    &quot;name&quot;: &quot;sk_conversion_revenue&quot;,
+    &quot;floodlight_id&quot;: &quot;10093926&quot;,
+    &quot;group_tag_string&quot;: &quot;sk_co000&quot;,
+    &quot;activity_tag_string&quot;: &quot;sk_co0&quot;,
+    &quot;custom_parameters&quot;: [&quot;value&quot;, &quot;transaction_id&quot;]
   }
 }'></textarea>
-          <small class="help-text">Full activity definitions in JSON format - enables precise matching and enrichment</small>
+          <small class="help-text">Full activity definitions with expected parameters - validates requests and highlights missing data</small>
         </div>
 
         <div class="form-actions">

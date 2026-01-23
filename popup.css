@@ -408,6 +408,14 @@ input:checked + .slider-small:before {
   border: 1px solid #e0e0e0;
 }
 
+/* Warning Badge for Missing Parameters */
+.accordion-badge.warning {
+  background: #fff3e0;
+  color: #e65100;
+  border: 1px solid #ffb74d;
+  font-weight: 700;
+}
+
 .accordion-timestamp {
   font-family: 'Courier New', monospace;
   font-size: 12px;
@@ -654,6 +662,11 @@ input:checked + .slider-small:before {
   border-left: 3px solid #ccc;
 }
 
+.row-warning {
+  background: #fff8e1;
+  border-left: 3px solid #ff9800;
+}
+
 /* Missing/Optional Indicators */
 .missing {
   font-style: italic;
@@ -670,6 +683,12 @@ input:checked + .slider-small:before {
 
 .missing.optional {
   color: #999;
+}
+
+.missing.expected {
+  color: #e65100;
+  background: #ffe0b2;
+  font-weight: 600;
 }
 
 /* URL Container */
