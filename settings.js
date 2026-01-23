@@ -75,6 +75,7 @@ function renderTemplateList() {
     const template = templates[configId];
     const customParamCount = Object.keys(template.customParams || {}).length;
     const activityGroupCount = Object.keys(template.activityGroups || {}).length;
+    const activitiesCount = Object.keys(template.activities || {}).length;
 
     return `
       <div class="template-card" data-config-id="${configId}">
@@ -104,6 +105,10 @@ function renderTemplateList() {
           <div class="stat">
             <span class="stat-value">${activityGroupCount}</span>
             <span class="stat-label">Activity Groups</span>
+          </div>
+          <div class="stat">
+            <span class="stat-value">${activitiesCount}</span>
+            <span class="stat-label">Activities</span>
           </div>
         </div>
       </div>
