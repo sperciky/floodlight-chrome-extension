@@ -98,8 +98,33 @@ function loadFloodlightData() {
   // Request data from all tabs
   chrome.runtime.sendMessage({ action: 'getAllFloodlightData' }, (response) => {
     console.log('[Popup] Received response:', response);
-    if (response && response.data && Array.isArray(response.data) && response.data.length > 0) {
+
+    if (!response) {
+      console.error('[Popup] No response from background script!');
+      allFloodlightData = [];
+      showNoDataState();
+      return;
+    }
+
+    if (!response.data) {
+      console.log('[Popup] Response has no data property');
+      allFloodlightData = [];
+      showNoDataState();
+      return;
+    }
+
+    if (!Array.isArray(response.data)) {
+      console.error('[Popup] Response data is not an array:', typeof response.data);
+      allFloodlightData = [];
+      showNoDataState();
+      return;
+    }
+
+    console.log('[Popup] Response data length:', response.data.length);
+
+    if (response.data.length > 0) {
       console.log('[Popup] Displaying data:', response.data);
+      console.log('[Popup] First request:', response.data[0]);
 
       // Store all data
       allFloodlightData = response.data;
@@ -108,10 +133,18 @@ function loadFloodlightData() {
       updateConfigIdDropdown(response.data);
 
       // Apply filters and display
+      console.log('[Popup] Current filters:', filters);
       const filteredData = applyFilters(response.data);
-      displayAccordions(filteredData);
+      console.log('[Popup] Filtered data length:', filteredData.length);
+
+      if (filteredData.length > 0) {
+        displayAccordions(filteredData);
+      } else {
+        console.log('[Popup] All data filtered out, showing empty state');
+        showNoDataState();
+      }
     } else {
-      console.log('[Popup] No data, showing empty state');
+      console.log('[Popup] Response data is empty array');
       allFloodlightData = [];
       showNoDataState();
     }
