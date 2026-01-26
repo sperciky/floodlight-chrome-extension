@@ -27,6 +27,8 @@ chrome.storage.local.get(null, (result) => {
       if (!isNaN(tabId) && Array.isArray(result[key])) {
         capturedRequests[tabId] = result[key];
         console.log(`[Floodlight Debugger] Restored ${result[key].length} requests for tab ${tabId} from storage`);
+        // Update badge for restored tab
+        updateBadgeForTab(tabId);
       }
     }
   });
@@ -43,8 +45,71 @@ chrome.storage.onChanged.addListener((changes, namespace) => {
     if (changes.persistData) {
       persistData = changes.persistData.newValue;
     }
+    // If filter settings changed, update all tab badges
+    if (changes.endpointFilter || changes.configIdFilter) {
+      updateAllTabBadges();
+    }
   }
 });
+
+/**
+ * Apply filters to requests (same logic as popup.js)
+ */
+function applyFiltersToRequests(requests, endpointFilter, configIdFilter) {
+  let filtered = requests;
+
+  // Filter by endpoint type
+  if (endpointFilter && endpointFilter !== 'both') {
+    filtered = filtered.filter(data => data.endpointType === endpointFilter);
+  }
+
+  // Filter by config ID
+  if (configIdFilter && configIdFilter !== 'all') {
+    filtered = filtered.filter(data => data.required && data.required.src === configIdFilter);
+  }
+
+  return filtered;
+}
+
+/**
+ * Update badge for a specific tab
+ */
+function updateBadgeForTab(tabId) {
+  // Get filter settings from storage
+  chrome.storage.local.get(['endpointFilter', 'configIdFilter'], (result) => {
+    const endpointFilter = result.endpointFilter || 'both';
+    const configIdFilter = result.configIdFilter || 'all';
+
+    // Get requests for this tab
+    const requests = capturedRequests[tabId] || [];
+
+    // Apply filters
+    const filteredRequests = applyFiltersToRequests(requests, endpointFilter, configIdFilter);
+    const count = filteredRequests.length;
+
+    // Update badge
+    chrome.action.setBadgeText({
+      tabId: tabId,
+      text: count > 0 ? String(count) : '',
+    });
+
+    chrome.action.setBadgeBackgroundColor({
+      tabId: tabId,
+      color: '#667eea', // Match extension's purple theme
+    });
+
+    console.log(`[Floodlight Debugger] Updated badge for tab ${tabId}: ${count} requests`);
+  });
+}
+
+/**
+ * Update badges for all tabs with captured requests
+ */
+function updateAllTabBadges() {
+  Object.keys(capturedRequests).forEach(tabId => {
+    updateBadgeForTab(parseInt(tabId));
+  });
+}
 
 /**
  * Parse URL parameters from a Floodlight request
@@ -212,6 +277,9 @@ chrome.webRequest.onCompleted.addListener(
       }
     });
 
+    // Update badge count for this tab
+    updateBadgeForTab(details.tabId);
+
     console.log('[Floodlight Debugger] Request captured successfully');
   },
   { urls: ["<all_urls>"] }
@@ -252,6 +320,8 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
       delete capturedRequests[tabId];
       chrome.storage.local.remove(`floodlight_data_${tabId}`);
       console.log(`[Floodlight Debugger] Cleared data for tab ${tabId} (new navigation)`);
+      // Clear badge
+      chrome.action.setBadgeText({ tabId: tabId, text: '' });
     }
   }
 });
@@ -262,6 +332,7 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
 chrome.tabs.onRemoved.addListener((tabId) => {
   delete capturedRequests[tabId];
   chrome.storage.local.remove(`floodlight_data_${tabId}`);
+  // Badge is automatically cleared when tab is removed
 });
 
 /**
@@ -374,9 +445,14 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     // Clear data for all tabs
     console.log('[Floodlight Debugger] Clearing all data from all tabs');
 
-    // Clear in-memory data
-    const tabIds = Object.keys(capturedRequests);
+    // Clear in-memory data and badges
+    const tabIds = Object.keys(capturedRequests).map(id => parseInt(id));
     capturedRequests = {};
+
+    // Clear badges for all tabs
+    tabIds.forEach(tabId => {
+      chrome.action.setBadgeText({ tabId: tabId, text: '' });
+    });
 
     // Always clear persisted data from storage (since we always persist now)
     // First, get all storage keys to find all floodlight_data_* entries
