@@ -13,7 +13,8 @@ const settingsBtn = document.getElementById('settingsBtn');
 const backBtn = document.getElementById('backBtn');
 const noDataState = document.getElementById('noDataState');
 const accordionContainer = document.getElementById('accordionContainer');
-const endpointToggleButtons = document.querySelectorAll('.three-state-toggle .toggle-option');
+const tabScopeToggleButtons = document.querySelectorAll('.controls-row > .toggle-container:nth-child(2) .three-state-toggle .toggle-option');
+const endpointToggleButtons = document.querySelectorAll('.controls-row > .toggle-container:nth-child(3) .three-state-toggle .toggle-option');
 const configIdFilter = document.getElementById('configIdFilter');
 
 // Track which accordion is currently open
@@ -25,6 +26,7 @@ let allFloodlightData = [];
 
 // Current filter settings
 let filters = {
+  tabScope: 'current',
   endpoint: 'both',
   configId: 'all'
 };
@@ -59,7 +61,21 @@ function loadSettings() {
   });
 
   // Load filter preferences
-  chrome.storage.local.get(['endpointFilter', 'configIdFilter'], (result) => {
+  chrome.storage.local.get(['tabScopeFilter', 'endpointFilter', 'configIdFilter'], (result) => {
+    // Tab scope filter
+    if (result.tabScopeFilter) {
+      filters.tabScope = result.tabScopeFilter;
+      // Update tab scope toggle
+      tabScopeToggleButtons.forEach(btn => {
+        if (btn.dataset.value === result.tabScopeFilter) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      });
+    }
+
+    // Endpoint filter
     if (result.endpointFilter) {
       filters.endpoint = result.endpointFilter;
       // Update three-state toggle
@@ -71,6 +87,8 @@ function loadSettings() {
         }
       });
     }
+
+    // Config ID filter
     if (result.configIdFilter) {
       filters.configId = result.configIdFilter;
       configIdFilter.value = result.configIdFilter;
@@ -90,13 +108,14 @@ function loadTemplates() {
 
 /**
  * Load Floodlight data from background script
- * Always shows data from all browser tabs
+ * Shows data from current tab or all tabs based on filter setting
  */
 function loadFloodlightData() {
-  console.log('[Popup] Requesting Floodlight data from all tabs...');
+  const action = filters.tabScope === 'current' ? 'getFloodlightData' : 'getAllFloodlightData';
+  console.log(`[Popup] Requesting Floodlight data (scope: ${filters.tabScope})...`);
 
-  // Request data from all tabs
-  chrome.runtime.sendMessage({ action: 'getAllFloodlightData' }, (response) => {
+  // Request data based on tab scope setting
+  chrome.runtime.sendMessage({ action }, (response) => {
     console.log('[Popup] Received response:', response);
 
     if (!response) {
@@ -694,6 +713,25 @@ function setupEventListeners() {
       });
     });
   }
+
+  // Tab scope toggle (two-state)
+  tabScopeToggleButtons.forEach(button => {
+    button.addEventListener('click', (e) => {
+      const value = e.target.dataset.value;
+
+      // Update active state
+      tabScopeToggleButtons.forEach(btn => btn.classList.remove('active'));
+      e.target.classList.add('active');
+
+      // Update filter
+      filters.tabScope = value;
+      chrome.storage.local.set({ tabScopeFilter: value });
+
+      // Reload data from the appropriate source (current tab vs all tabs)
+      console.log(`[Popup] Tab scope changed to: ${value}`);
+      loadFloodlightData();
+    });
+  });
 
   // Endpoint toggle (three-state)
   endpointToggleButtons.forEach(button => {
