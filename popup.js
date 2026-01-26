@@ -261,8 +261,8 @@ function createAccordionItem(data, index) {
 
   // Check if expected parameters are missing or undefined
   let hasMissingParams = false;
-  let hasUndefinedExpectedParams = false; // Undefined in EXPECTED parameters (critical)
-  let hasUndefinedUnexpectedParams = false; // Undefined in OTHER parameters (warning)
+  let hasUndefinedParams = false; // Any parameter has undefined value
+  let hasUndefinedInExpected = false; // Undefined in expected parameters (critical)
 
   // First, check expected parameters (if activity is defined)
   const expectedParams = matchedActivity && matchedActivity.custom_parameters && Array.isArray(matchedActivity.custom_parameters)
@@ -283,21 +283,19 @@ function createAccordionItem(data, index) {
       else if (!customValue && !salesValue ||
                customValue === 'undefined' || customValue === 'null' ||
                salesValue === 'undefined' || salesValue === 'null') {
-        hasUndefinedExpectedParams = true; // Critical: expected parameter is undefined
+        hasUndefinedParams = true;
+        hasUndefinedInExpected = true; // Critical: expected parameter is undefined
       }
     });
   }
 
   // Also check ALL custom and sales parameters for string "undefined" or "null"
-  // But only flag as "unexpected" if they're NOT in the expected list
   const allParams = { ...data.custom, ...data.sales };
   Object.keys(allParams).forEach(param => {
     const value = allParams[param];
     if (value === 'undefined' || value === 'null' || value === '') {
-      // If this parameter is NOT in the expected list, it's an unexpected undefined
-      if (!expectedParams.includes(param)) {
-        hasUndefinedUnexpectedParams = true;
-      }
+      hasUndefinedParams = true;
+      // Don't set hasUndefinedInExpected here - already checked above
     }
   });
 
@@ -322,8 +320,16 @@ function createAccordionItem(data, index) {
 
   // Warning badges for missing and undefined parameters
   const missingBadge = hasMissingParams ? '<span class="accordion-badge params-missing">⊘ Params Missing</span>' : '';
-  const undefinedExpectedBadge = hasUndefinedExpectedParams ? '<span class="accordion-badge params-undefined-expected">❗ Undefined Value</span>' : '';
-  const undefinedUnexpectedBadge = hasUndefinedUnexpectedParams ? '<span class="accordion-badge params-undefined">⚠ Undefined Value</span>' : '';
+
+  // Undefined badge - shows ❗ if undefined in expected params, ⚠ otherwise
+  let undefinedBadge = '';
+  if (hasUndefinedParams) {
+    if (hasUndefinedInExpected) {
+      undefinedBadge = '<span class="accordion-badge params-undefined-expected">❗ Undefined Value</span>';
+    } else {
+      undefinedBadge = '<span class="accordion-badge params-undefined">⚠ Undefined Value</span>';
+    }
+  }
 
   accordion.innerHTML = `
     <div class="accordion-header">
@@ -333,8 +339,7 @@ function createAccordionItem(data, index) {
         <span class="accordion-badge ${data.activityType.toLowerCase()}">${data.activityType}</span>
         <span class="accordion-badge endpoint-${endpointClass}">${endpointBadge}</span>
         ${missingBadge}
-        ${undefinedExpectedBadge}
-        ${undefinedUnexpectedBadge}
+        ${undefinedBadge}
       </div>
       <div class="accordion-timestamp">${formatTimestamp(new Date(data.timestamp))}</div>
       <span class="accordion-arrow">▼</span>
