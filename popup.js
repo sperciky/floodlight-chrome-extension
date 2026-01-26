@@ -185,6 +185,16 @@ function updateConfigIdDropdown(dataArray) {
   // Get current selection
   const currentSelection = configIdFilter.value;
 
+  // Check if current selection exists in the new data
+  const currentSelectionExists = currentSelection === 'all' || configIds.has(currentSelection);
+
+  // If current selection doesn't exist, reset to "all"
+  if (!currentSelectionExists) {
+    console.log(`[Popup] Current filter "${currentSelection}" not in data, resetting to "all"`);
+    filters.configId = 'all';
+    chrome.storage.local.set({ configIdFilter: 'all' });
+  }
+
   // Rebuild dropdown
   configIdFilter.innerHTML = '<option value="all">All IDs</option>';
 
@@ -193,11 +203,16 @@ function updateConfigIdDropdown(dataArray) {
     const option = document.createElement('option');
     option.value = id;
     option.textContent = id;
-    if (id === currentSelection) {
+    if (id === currentSelection && currentSelectionExists) {
       option.selected = true;
     }
     configIdFilter.appendChild(option);
   });
+
+  // Update dropdown to show "all" if filter was reset
+  if (!currentSelectionExists) {
+    configIdFilter.value = 'all';
+  }
 }
 
 /**
