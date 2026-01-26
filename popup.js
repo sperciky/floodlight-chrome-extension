@@ -262,6 +262,8 @@ function createAccordionItem(data, index) {
   // Check if expected parameters are missing or undefined
   let hasMissingParams = false;
   let hasUndefinedParams = false;
+
+  // First, check expected parameters (if activity is defined)
   if (matchedActivity && matchedActivity.custom_parameters && Array.isArray(matchedActivity.custom_parameters)) {
     matchedActivity.custom_parameters.forEach(param => {
       const customValue = data.custom[param];
@@ -276,6 +278,17 @@ function createAccordionItem(data, index) {
       else if (!customValue && !salesValue ||
                customValue === 'undefined' || customValue === 'null' ||
                salesValue === 'undefined' || salesValue === 'null') {
+        hasUndefinedParams = true;
+      }
+    });
+  }
+
+  // Also check ALL custom and sales parameters for string "undefined" or "null"
+  // This catches undefined values even when no template is configured
+  if (!hasUndefinedParams) {
+    const allParams = { ...data.custom, ...data.sales };
+    Object.values(allParams).forEach(value => {
+      if (value === 'undefined' || value === 'null' || value === '') {
         hasUndefinedParams = true;
       }
     });
