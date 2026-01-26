@@ -371,12 +371,15 @@ input:checked + .slider-small:before {
 }
 
 .accordion-badge {
-  display: inline-block;
-  padding: 3px 10px;
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
   border-radius: 12px;
   font-size: 11px;
   font-weight: 600;
   text-transform: uppercase;
+  line-height: 1.2;
+  white-space: nowrap;
 }
 
 .accordion-badge.counter {
