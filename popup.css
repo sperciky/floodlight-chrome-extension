@@ -416,7 +416,15 @@ input:checked + .slider-small:before {
   font-weight: 700;
 }
 
-/* Badge for Undefined/Null Parameter Values */
+/* Badge for Undefined/Null Parameter Values in EXPECTED Parameters (Critical) */
+.accordion-badge.params-undefined-expected {
+  background: #ffebee;
+  color: #d32f2f;
+  border: 1px solid #ef5350;
+  font-weight: 700;
+}
+
+/* Badge for Undefined/Null Parameter Values in Other Parameters (Warning) */
 .accordion-badge.params-undefined {
   background: #fff3e0;
   color: #e65100;
