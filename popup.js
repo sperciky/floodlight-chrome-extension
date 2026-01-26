@@ -13,8 +13,8 @@ const settingsBtn = document.getElementById('settingsBtn');
 const backBtn = document.getElementById('backBtn');
 const noDataState = document.getElementById('noDataState');
 const accordionContainer = document.getElementById('accordionContainer');
-const tabScopeToggleButtons = document.querySelectorAll('.controls-row > .toggle-container:nth-child(2) .three-state-toggle .toggle-option');
-const endpointToggleButtons = document.querySelectorAll('.controls-row > .toggle-container:nth-child(3) .three-state-toggle .toggle-option');
+const tabScopeToggleButtons = document.querySelectorAll('#tabScopeToggle .toggle-option');
+const endpointToggleButtons = document.querySelectorAll('#endpointToggle .toggle-option');
 const configIdFilter = document.getElementById('configIdFilter');
 
 // Track which accordion is currently open
