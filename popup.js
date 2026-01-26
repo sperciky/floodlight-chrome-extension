@@ -261,9 +261,16 @@ function createAccordionItem(data, index) {
 
   // Check if expected parameters are missing or undefined
   let hasMissingParams = false;
-  let hasUndefinedParams = false;
-  if (matchedActivity && matchedActivity.custom_parameters && Array.isArray(matchedActivity.custom_parameters)) {
-    matchedActivity.custom_parameters.forEach(param => {
+  let hasUndefinedExpectedParams = false; // Undefined in EXPECTED parameters (critical)
+  let hasUndefinedUnexpectedParams = false; // Undefined in OTHER parameters (warning)
+
+  // First, check expected parameters (if activity is defined)
+  const expectedParams = matchedActivity && matchedActivity.custom_parameters && Array.isArray(matchedActivity.custom_parameters)
+    ? matchedActivity.custom_parameters
+    : [];
+
+  if (expectedParams.length > 0) {
+    expectedParams.forEach(param => {
       const customValue = data.custom[param];
       const salesValue = data.sales[param];
       const allParams = { ...data.custom, ...data.sales };
@@ -276,10 +283,23 @@ function createAccordionItem(data, index) {
       else if (!customValue && !salesValue ||
                customValue === 'undefined' || customValue === 'null' ||
                salesValue === 'undefined' || salesValue === 'null') {
-        hasUndefinedParams = true;
+        hasUndefinedExpectedParams = true; // Critical: expected parameter is undefined
       }
     });
   }
+
+  // Also check ALL custom and sales parameters for string "undefined" or "null"
+  // But only flag as "unexpected" if they're NOT in the expected list
+  const allParams = { ...data.custom, ...data.sales };
+  Object.keys(allParams).forEach(param => {
+    const value = allParams[param];
+    if (value === 'undefined' || value === 'null' || value === '') {
+      // If this parameter is NOT in the expected list, it's an unexpected undefined
+      if (!expectedParams.includes(param)) {
+        hasUndefinedUnexpectedParams = true;
+      }
+    }
+  });
 
   // If no activity match, fall back to activityGroups mapping for cat parameter
   let displayName = activityName;
@@ -302,7 +322,8 @@ function createAccordionItem(data, index) {
 
   // Warning badges for missing and undefined parameters
   const missingBadge = hasMissingParams ? '<span class="accordion-badge params-missing">⊘ Params Missing</span>' : '';
-  const undefinedBadge = hasUndefinedParams ? '<span class="accordion-badge params-undefined">⚠ Undefined Value</span>' : '';
+  const undefinedExpectedBadge = hasUndefinedExpectedParams ? '<span class="accordion-badge params-undefined-expected">❗ Undefined Value</span>' : '';
+  const undefinedUnexpectedBadge = hasUndefinedUnexpectedParams ? '<span class="accordion-badge params-undefined">⚠ Undefined Value</span>' : '';
 
   accordion.innerHTML = `
     <div class="accordion-header">
@@ -312,7 +333,8 @@ function createAccordionItem(data, index) {
         <span class="accordion-badge ${data.activityType.toLowerCase()}">${data.activityType}</span>
         <span class="accordion-badge endpoint-${endpointClass}">${endpointBadge}</span>
         ${missingBadge}
-        ${undefinedBadge}
+        ${undefinedExpectedBadge}
+        ${undefinedUnexpectedBadge}
       </div>
       <div class="accordion-timestamp">${formatTimestamp(new Date(data.timestamp))}</div>
       <span class="accordion-arrow">▼</span>
