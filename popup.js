@@ -321,11 +321,11 @@ function createAccordionItem(data, index) {
   // Warning badges for missing and undefined parameters
   const missingBadge = hasMissingParams ? '<span class="accordion-badge params-missing">⊘ Missing</span>' : '';
 
-  // Undefined badge - shows ‼️ if undefined in expected params, no icon otherwise
+  // Undefined badge - shows ⚠ if undefined in expected params, no icon otherwise
   let undefinedBadge = '';
   if (hasUndefinedParams) {
     if (hasUndefinedInExpected) {
-      undefinedBadge = '<span class="accordion-badge params-undefined-expected">‼️ Undefined</span>';
+      undefinedBadge = '<span class="accordion-badge params-undefined-expected">⚠ Undefined</span>';
     } else {
       undefinedBadge = '<span class="accordion-badge params-undefined">Undefined</span>';
     }
